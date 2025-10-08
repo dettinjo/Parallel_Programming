@@ -7,30 +7,24 @@
 
 int main(int argc, char** argv) {
     
-    // Check there are five arguments {script M N maxiter tol}
     if (argc != 5) {
         printf("Usage: %s <M dim (int)> <N dim (int)> <Max Iterations> <Tolerance>\n", argv[0]);
         return 1;
     }
     
-    // Declare M & N
     int M = atoi(argv[1]);
     int N = atoi(argv[2]);
-
-    // Declare tolerance and max iterations
     int maxiter = atoi(argv[3]);
     float tol = atof(argv[4]);
     
     float *A = NULL;
     float *Anew = NULL;
     
-    // Step 2a: Allocate array of N pointers (one for each row)
-    A = (float*) malloc(N * sizeof(float));
-    Anew = (float*) malloc(N * sizeof(float));
+    A = (float*) malloc(N * M * sizeof(float));
+    Anew = (float*) malloc(N * M * sizeof(float));
 
-    // Check first allocation
     if (A == NULL || Anew == NULL) {
-        printf("Error: Memory allocation failed for row pointers!\n");
+        printf("Error: Memory allocation failed!\n");
         if (A) free(A);
         if (Anew) free(Anew);
         return 1;
@@ -55,6 +49,8 @@ int main(int argc, char** argv) {
         A[INDEX(i, M-1, M)] = exp(-M_PI) * sin(i * M_PI / (N - 1));
     }
     
+    printf("\n");
+    
     bool iterstop = false;
     while ((iter < maxiter) && !iterstop)
     {
@@ -78,21 +74,27 @@ int main(int argc, char** argv) {
             iterstop = true;
         }
 
-        for (int i = 0; i < N; i++){
-            Anew[INDEX(i, 0, M)] = A[INDEX(i, 0, M)];
-            Anew[INDEX(i, M-1, M)] = A[INDEX(i, M-1, M)];
-        }
-
         float *temp = A;
         A = Anew;
         Anew = temp;
-
+        
+        for (int j = 0; j < M; j++) {
+            A[INDEX(0, j, M)] = 0.0f;
+            A[INDEX(N-1, j, M)] = 0.0f;
+        }
+        
+        for (int i = 0; i < N; i++){
+            A[INDEX(i, 0, M)] = sin(i * M_PI / (N - 1));
+            A[INDEX(i, M-1, M)] = exp(-M_PI) * sin(i * M_PI / (N - 1));
+        }
+        
         iter++;
 
         if (iter % 10 == 0) {
             printf("Iteration %d: error = %f\n", iter, maxdiff);
         }
     }
+    
     if (iterstop == true){
         printf("Tolerance reached. Tolerance given = %8.9f \n", tol);
     }
