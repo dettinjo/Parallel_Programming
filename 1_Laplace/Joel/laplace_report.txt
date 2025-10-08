@@ -1,6 +1,6 @@
 =================================================
    Jacobi Solver - Full Execution Logs
-   Job started at: Wed Oct  8 23:21:23 CEST 2025
+   Job started at: Thu Oct  9 00:09:22 CEST 2025
 =================================================
 
 --- LOG: Running Static Version (100x100) ---
@@ -219,9 +219,9 @@ Iteration: 990, Maximum Error: 0.015615
 Iteration: 1000, Maximum Error: 0.015535
 Reached maximum iterations (1000) with error 0.015535
 
-real	0m18.864s
-user	0m18.795s
-sys	0m0.003s
+real	0m18.859s
+user	0m18.788s
+sys	0m0.004s
 
 
 
@@ -330,9 +330,9 @@ Iteration: 990, Maximum Error: 0.015634
 Iteration: 1000, Maximum Error: 0.015554
 Reached maximum iterations (1000) with error 0.015554
 
-real	4m24.072s
-user	4m22.982s
-sys	0m0.020s
+real	4m24.829s
+user	4m23.735s
+sys	0m0.021s
 
 
 
@@ -441,7 +441,7 @@ Iteration: 990, Maximum Error: 0.013805
 Iteration: 1000, Maximum Error: 0.013719
 Reached maximum iterations (1000) with error 0.013719
 
-real	0m0.089s
+real	0m0.088s
 user	0m0.085s
 sys	0m0.001s
 
@@ -553,8 +553,8 @@ Iteration: 1000, Maximum Error: 0.013719
 Reached maximum iterations (1000) with error 0.013719
 
 real	0m0.079s
-user	0m0.073s
-sys	0m0.003s
+user	0m0.075s
+sys	0m0.001s
 
 
 
@@ -663,9 +663,9 @@ Iteration: 990, Maximum Error: 0.015615
 Iteration: 1000, Maximum Error: 0.015535
 Reached maximum iterations (1000) with error 0.015535
 
-real	0m18.893s
-user	0m18.822s
-sys	0m0.005s
+real	0m18.907s
+user	0m18.838s
+sys	0m0.003s
 
 
 
@@ -774,9 +774,9 @@ Iteration: 990, Maximum Error: 0.015615
 Iteration: 1000, Maximum Error: 0.015535
 Reached maximum iterations (1000) with error 0.015535
 
-real	0m18.350s
-user	0m18.281s
-sys	0m0.003s
+real	0m18.337s
+user	0m18.271s
+sys	0m0.002s
 
 
 
@@ -885,9 +885,9 @@ Iteration: 990, Maximum Error: 0.015634
 Iteration: 1000, Maximum Error: 0.015554
 Reached maximum iterations (1000) with error 0.015554
 
-real	2m33.758s
-user	2m33.011s
-sys	0m0.018s
+real	2m33.835s
+user	2m33.090s
+sys	0m0.019s
 
 
 
@@ -996,9 +996,9 @@ Iteration: 990, Maximum Error: 0.015634
 Iteration: 1000, Maximum Error: 0.015554
 Reached maximum iterations (1000) with error 0.015554
 
-real	2m18.613s
-user	2m17.979s
-sys	0m0.018s
+real	2m18.608s
+user	2m17.982s
+sys	0m0.017s
 
 
 
@@ -1008,9 +1008,9 @@ sys	0m0.018s
 
 Grid Size    | V1 (Static)          | V2 (Dynamic)         | V3 (Optimized)      
 ------------ | -------------------- | -------------------- | --------------------
-100x100      | 0m0.085s             | 0m0.087s             | 0m0.079s            
-1000x1000    | 0m18.868s            | 0m18.890s            | 0m18.327s           
-4096x4096    | 4m23.938s            | 2m34.167s            | 2m18.616s           
+100x100      | 0m0.084s             | 0m0.087s             | 0m0.078s            
+1000x1000    | 0m18.859s            | 0m18.900s            | 0m18.330s           
+4096x4096    | 4m24.201s            | 2m34.084s            | 2m18.629s           
 
-Job finished at: Wed Oct  8 23:41:49 CEST 2025
+Job finished at: Thu Oct  9 00:29:49 CEST 2025
 =================================================

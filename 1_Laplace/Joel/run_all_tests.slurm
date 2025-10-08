@@ -46,9 +46,24 @@ time_opt_100="FAILED"
 time_opt_1000="FAILED"
 time_opt_4096="FAILED"
 
-# Assume executables are compiled for each static size, e.g.,
-# gcc -DN=100 -DM=100 myProgram_v1_static.c -o stat_100 -lm
-# etc.
+# --- SYSTEM INFORMATION PROBE ---
+# This section runs on the compute node and saves its specs to the report.
+echo "-------------------------------------------------" >> $OUTPUT_FILE
+echo "         SYSTEM HARDWARE & SOFTWARE" >> $OUTPUT_FILE
+echo "-------------------------------------------------" >> $OUTPUT_FILE
+echo "Job is running on node: $(hostname)" >> $OUTPUT_FILE
+echo "" >> $OUTPUT_FILE
+echo "--- CPU Information ---" >> $OUTPUT_FILE
+lscpu >> $OUTPUT_FILE
+echo "" >> $OUTPUT_FILE
+echo "--- Memory Information ---" >> $OUTPUT_FILE
+free -h >> $OUTPUT_FILE
+echo "" >> $OUTPUT_FILE
+echo "--- Compiler Version ---" >> $OUTPUT_FILE
+gcc --version >> $OUTPUT_FILE
+echo "" >> $OUTPUT_FILE
+echo "-------------------------------------------------" >> $OUTPUT_FILE
+echo -e "\n\n" >> $OUTPUT_FILE
 
 
 #=======================================================================
