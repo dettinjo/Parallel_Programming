@@ -40,7 +40,13 @@ int main(int argc, char** argv) {
         // Check each row allocation
         if (A[i] == NULL || Anew[i] == NULL) {
             printf("Error: Memory allocation failed for row %d!\n", i);
-            // TODO: Free previously allocated memory before returning
+            // Free previously allocated rows
+            for (int k = 0; k < i; k++) {
+                free(A[k]);
+                free(Anew[k]);
+            }
+            free(A);
+            free(Anew);
             return 1;
         }
     }
