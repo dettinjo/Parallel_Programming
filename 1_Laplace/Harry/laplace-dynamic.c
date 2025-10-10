@@ -91,7 +91,7 @@ int main(int argc, char** argv) {
         for (int i = 1; i < (N-1); i++){
             for (int j = 1; j < (M-1); j++){
                 Anew[i][j] = (A[i-1][j] + A[i+1][j] + A[i][j-1] + A[i][j+1])/4;
-                float diff = sqrt(fabs(A[i][j] - Anew[i][j]));
+                float diff = fabs(A[i][j] - Anew[i][j]);
                 if (diff > maxdiff){
                     maxdiff = diff;
                 }
