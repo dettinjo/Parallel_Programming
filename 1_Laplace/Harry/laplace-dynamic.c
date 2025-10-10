@@ -33,6 +33,7 @@ int main(int argc, char** argv) {
     }
 
     // Step 2b: Allocate M floats for each row
+
     for (int i = 0; i < N; i++) {
         A[i] = (float*) malloc(M * sizeof(float));
         Anew[i] = (float*) malloc(M * sizeof(float));
