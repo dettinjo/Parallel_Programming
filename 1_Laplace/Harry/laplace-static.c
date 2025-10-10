@@ -4,8 +4,8 @@
 #include <math.h>
 
 // Global
-#define N 15
-#define M 15
+#define N 100
+#define M 100
 
 int main(int argc, char** argv) {
     
@@ -42,7 +42,7 @@ int main(int argc, char** argv) {
         A[i][M-1] = exp(-M_PI) * sin(i * M_PI / (N - 1));    // Right column
     }
     
-    // Print the initial matrix to verify
+/*     // Print the initial matrix to verify
     printf("Initial (K) matrix:\n");
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < M; j++) {
@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
         printf("\n");
     }
     
-    printf("\n");
+    printf("\n"); */
     
     bool iterstop = false;
     while ((iter < maxiter) && !iterstop)
