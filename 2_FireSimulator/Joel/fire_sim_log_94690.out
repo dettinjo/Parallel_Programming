@@ -1,0 +1,16 @@
+Slurm Job ID: 94690
+Starting job on node: aolin-gpu-3.uab.cat
+----------------------------------------------------
+Compiling source file: extinguishing_timed.c...
+Compilation successful. Executable name: extinguishing_timed
+----------------------------------------------------
+Starting benchmarks...
+Running benchmark for: test2
+Finished benchmark for: test2
+Running benchmark for: test3
+Finished benchmark for: test3
+Running benchmark for: test4
+Finished benchmark for: test4
+----------------------------------------------------
+All benchmarks complete.
+All results have been saved to the file: profiling_results.txt
