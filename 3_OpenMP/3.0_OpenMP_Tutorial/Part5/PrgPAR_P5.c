@@ -1,9 +1,9 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <omp.h> // Make sure to include this
+#include <omp.h>
 
-// --- INSERT ALL 5 FUNCTIONS HERE ---
+// --- ALL 5 FUNCTIONS GO HERE ---
 // (VectF1, VectF2, VectScan, VectAverage, VectSum)
 // (Identical to 01_Prg.c)
 void VectF1(double *IN, double *OUT, int n)
@@ -14,23 +14,20 @@ void VectF1(double *IN, double *OUT, int n)
     OUT[i] = (double)(T % 4) + 0.5 + (IN[i] - trunc(IN[i]));
   }
 }
-
 void VectF2(double *IN, double *OUT, double v, int n)
 {
   for (int i = 0; i < n; i++)
     OUT[i] = v / (1.0 + fabs(IN[i]));
 }
-
 void VectScan(double *IN, double *OUT, int n)
 {
   double sum = 0.0;
   for (int i = 0; i < n; i++)
   {
     sum += IN[i];
-    OUT[i] = sum; // Inclusive: include current element
+    OUT[i] = sum;
   }
 }
-
 void VectAverage(double *IN, double *OUT, int n)
 {
   for (int i = 1; i < n - 1; i++)
@@ -38,7 +35,6 @@ void VectAverage(double *IN, double *OUT, int n)
     OUT[i] = (2.0 * IN[i] + IN[i - 1] + IN[i + 1]) / 4.0;
   }
 }
-
 double VectSum(double *V, int n)
 {
   double sum = 0;
@@ -73,46 +69,73 @@ int main(int argc, char **argv)
   printf("Inputs: N= %d, Rep= %d\n", N, REP);
 
   double v = 10.0;
-  // This variable is now safe because there is no "race-ahead" thread.
-  double v_snapshot = v;
+  double v_snapshot = v; // This will be handled by the task's scope
 
   double start_time = omp_get_wtime();
 
-// Create the thread team ONCE.
-// The 'i' loop counter must be private to each thread's stack.
-#pragma omp parallel private(i) shared(A, B, C, D, v, v_snapshot, N, REP)
+// === SINGLE FORK/JOIN ===
+// Create the 12-thread team ONCE.
+#pragma omp parallel shared(A, B, C, D, v, N, REP, i)
   {
-    // All threads in the team (just 2) will execute this loop.
-    for (i = 0; i < REP; i++)
-    {
-// 1. One thread (T0) executes VectF1, the other (T1) waits.
+// === TASK PRODUCER ===
+// One thread loops 250,000 times, creating all tasks
 #pragma omp single
+    {
+      for (i = 0; i < REP; i++)
       {
-        VectF1(A, B, N);
-        // T0 reads 'v' from the previous iteration
-        v_snapshot = v;
-      }
-// Implicit barrier: T0 and T1 sync. VectF1 is done.
+// We create 5 tasks that represent the 5 functions.
+// We use 'depend' clauses to enforce the *exact*
+// dependency graph. This eliminates all barriers.
 
-// 2. Both threads (T0, T1) hit this.
-#pragma omp sections
-      {
-#pragma omp section
+// The 'A', 'B', 'C', 'D', 'v' variables act as
+// "dependency tokens".
+
+// TASK 1: F1 (A -> B)
+// Must wait for 'A' (from Scan) and 'v' (from Sum)
+// from the *previous* iteration.
+// Will write to 'B'.
+#pragma omp task depend(in : A, v) depend(out : B)
         {
-          // T1 executes the slow path, reading the safe v_snapshot
+          VectF1(A, B, N);
+        }
+
+// TASK 2: Average (B -> D)
+// Must wait for 'B' (from F1).
+// Will write to 'D'.
+#pragma omp task depend(in : B) depend(out : D)
+        {
+          VectAverage(B, D, N);
+        }
+
+// TASK 3: F2 (B, v -> C)
+// Must wait for 'B' (from F1) and 'v' (from Sum).
+// Will write to 'C'.
+#pragma omp task depend(in : B, v) depend(out : C)
+        {
+          // We must snapshot 'v' *inside* this task
+          // to get the correctly-depended-on value.
+          double v_snapshot = v;
           VectF2(B, C, v_snapshot, N);
+        }
+
+// TASK 4: Scan (C -> A)
+// Must wait for 'C' (from F2).
+// Will write to 'A' (which F1 in the next iter needs).
+#pragma omp task depend(in : C) depend(out : A)
+        {
           VectScan(C, A, N);
         }
-#pragma omp section
+
+// TASK 5: Sum (D -> v)
+// Must wait for 'D' (from Average).
+// Will write to 'v' (which F1/F2 in the next iter need).
+#pragma omp task depend(in : D) depend(out : v)
         {
-          // T0 executes the fast path
-          VectAverage(B, D, N);
           v = VectSum(D, N);
         }
-      }
-      // Implicit barrier: T0 waits for T1. Both branches are done.
-    } // End of REP loop. T0 and T1 go to the next iteration.
-  } // Implicit barrier: Parallel region ends, team is destroyed.
+      } // End of REP loop. Producer has created 1.25M tasks.
+    } // End of 'single' producer block.
+  } // End of 'parallel' region. All threads wait here.
 
   double end_time = omp_get_wtime();
   printf("Execution time: %f seconds\n", end_time - start_time);

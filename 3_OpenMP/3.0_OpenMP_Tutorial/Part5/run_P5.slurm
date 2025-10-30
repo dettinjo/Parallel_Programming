@@ -1,47 +1,36 @@
 #!/bin/bash
-#SBATCH --job-name=openmp_p5_FIXED
-#SBATCH --output=openmp_p5_FIXED.out
-#SBATCH --error=openmp_p5_FIXED.err
-
-# --- Optimal Resource Request ---
-#SBATCH --partition=cuda-ext.q       # Specify the partition
-#SBATCH --nodelist=aolin-gpu-1       # Target the idle node
-#SBATCH --nodes=1                    # Request 1 node
-#SBATCH --ntasks=1                   # Request 1 task
-#SBATCH --cpus-per-task=2            # *** CRITICAL: Request only 2 CPUs ***
-#SBATCH --time=00:10:00              # 10 mins
+#SBATCH --job-name=openmp_p5_TASK
+#SBATCH --output=openmp_p5_TASK.out
+#SBATCH --error=openmp_p5_TASK.err
+#SBATCH --partition=cuda-ext.q
+#SBATCH --nodelist=aolin-gpu-1
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=12
+#SBATCH --time=00:10:00
 
 # --- Configuration ---
-SRC_FILE="PrgPAR.c"
-EXE_FILE="PrgPAR"
-ARGS="20000 250000" # N=20000, REP=250000
+SRC_FILE="PrgPAR_P5.c"
+EXE_FILE="PrgPAR_P5"
+ARGS="20000 250000"
 
 # --- Compilation ---
 echo "Compiling ${SRC_FILE}..."
-gcc -Ofast -fno-inline -fopenmp ${SRC_FILE} -o ${EXE_FILE} -lm
-
-if [ $? -ne 0 ]; then
-  echo "Compilation failed!"
-  exit 1
-fi
-
+# We can remove -fno-inline now.
+gcc -Ofast -fopenmp ${SRC_FILE} -o ${EXE_FILE} -lm
 echo "Compilation successful."
 
 # --- Execution ---
-
-# *** CRITICAL FIX ***
-# Force the 'omp parallel' region to create a team of ONLY 2 threads.
-# This eliminates barrier contention and fixes the race condition.
-export OMP_NUM_THREADS=2
-
-# We don't need nested parallelism for this code.
+export OMP_NUM_THREADS=12
 export OMP_NESTED=false
+# We use 'active' (default) because threads are
+# now busy with tasks, not spin-waiting at barriers.
+export OMP_WAIT_POLICY=active
 
 echo "========================================="
-echo "Running on node $(hostname) with OMP_NUM_THREADS=2"
+echo "Running on node $(hostname) with OMP_NUM_THREADS=12"
+echo "OMP_WAIT_POLICY=${OMP_WAIT_POLICY}"
 echo "========================================="
-# We will use 'time' to get a simple wall-clock reading
 time ./${EXE_FILE} $ARGS
-
 echo "========================================="
 echo "Analysis complete."
