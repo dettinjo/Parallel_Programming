@@ -1,0 +1,10 @@
+Slurm Job ID: 96673
+Running Part 2 (P2) Flawed Parallel Analysis on node: aolin-gpu-3.uab.cat
+----------------------------------------------------
+Compiling PrgPAR.c with -fopenmp...
+Compilation successful.
+----------------------------------------------------
+OMP_NUM_THREADS set to 2
+Running the program and saving output to p2_execution_output.txt...
+----------------------------------------------------
+Job finished. The complete execution output is in 'p2_execution_output.txt'.

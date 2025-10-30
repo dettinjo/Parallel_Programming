@@ -1,0 +1,11 @@
+Compiling PrgPAR_P5.c...
+Compilation successful.
+=========================================
+Running on node aolin-gpu-1.uab.cat with OMP_NUM_THREADS=12
+OMP_WAIT_POLICY=active
+=========================================
+Inputs: N= 20000, Rep= 250000
+Execution time: 220.071428 seconds
+Outputs: v= 5.012831130447e+04, A[19999]= 3.237046462115e+08
+=========================================
+Analysis complete.
