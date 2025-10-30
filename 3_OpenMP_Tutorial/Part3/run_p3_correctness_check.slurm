@@ -27,6 +27,10 @@
 # -- Set partition for executing the job
 #SBATCH --partition=cuda-ext.q
 
+# -- Specify the node to run the job on
+#SBATCH --nodelist=aolin-gpu-1
+
+
 # =======================================================================
 # EXECUTION LOGIC FOR PART 3
 # =======================================================================

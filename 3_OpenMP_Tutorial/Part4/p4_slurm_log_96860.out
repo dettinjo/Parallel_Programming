@@ -1,0 +1,13 @@
+Running Part 4 (P4) Optimized Parallel on node: aolin-gpu-1.uab.cat
+----------------------------------------------------
+Compiling PrgPAR_P4.c with -fopenmp...
+Compilation successful.
+----------------------------------------------------
+OMP_NUM_THREADS set to 2
+Running 'time ./PrgPAR_P4' and saving output to p4_execution_output.txt...
+
+real	0m50.406s
+user	1m39.701s
+sys	0m0.505s
+----------------------------------------------------
+Job finished. The output is in 'p4_execution_output.txt'.

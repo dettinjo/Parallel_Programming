@@ -1,118 +1,156 @@
 #!/bin/bash
-#SBATCH --job-name=openmp_opt
-#SBATCH --output=openmp_results_%j.out
-#SBATCH --error=openmp_results_%j.err
+#SBATCH --job-name=openmp_P5_solution
+#SBATCH --output=openmp_results_P5_%j.out
+#SBATCH --error=openmp_results_P5_%j.err
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=12
-#SBATCH --time=00:30:00
+#SBATCH --time=00:15:00
 #SBATCH --mem=4G
 #SBATCH --partition=cuda-ext.q
-
-# Load necessary modules (adjust based on your cluster)
-# module load gcc/latest
-# module load intel/latest
+#SBATCH --nodelist=aolin-gpu-1
 
 echo "========================================="
+echo "OpenMP P5 Manual Solution vs Sequential Baseline Test"
 echo "Job started at: $(date)"
 echo "Running on node: $(hostname)"
 echo "========================================="
+echo ""
 
-# Compile the program
-echo "Compiling the program..."
+# Compile both versions
+echo "Compiling programs..."
 
-# Check if source file exists
+# Check if source files exist
 if [ ! -f "PrgPAR_P5.c" ]; then
     echo "Error: PrgPAR_P5.c not found!"
-    echo "Looking for C files in current directory:"
-    ls -la *.c 2>/dev/null || echo "No .c files found"
+    exit 1
+fi
+if [ ! -f "Prg_baseline_timed.c" ]; then
+    echo "Error: Prg_baseline_timed.c not found!"
     exit 1
 fi
 
-gcc -Ofast -fno-inline -fopenmp -march=native PrgPAR_P5.c -o PrgPAR_P5 -lm
+# Compile P5 optimized version
+# *** FIX: Moved -fopenmp and -lm to the end, after the source file ***
+gcc -O3 -march=native -std=c99 PrgPAR_P5.c -o PrgPAR_P5 -lm -fopenmp
+if [ $? -ne 0 ]; then echo "P5 Solution compilation failed!"; exit 1; fi
 
-if [ $? -ne 0 ]; then
-    echo "Compilation failed!"
-    exit 1
-fi
+# Compile sequential baseline version
+# *** FIX: Moved -fopenmp and -lm to the end, after the source file ***
+gcc -O3 -march=native Prg_baseline_timed.c -o Prg_baseline -lm -fopenmp
+if [ $? -ne 0 ]; then echo "Baseline compilation failed!"; exit 1; fi
 
-# Verify executable was created
-if [ ! -f "./PrgPAR_P5" ]; then
-    echo "Error: Executable was not created!"
-    ls -la
-    exit 1
-fi
 
 echo "Compilation successful!"
 echo ""
 
-# Test with different thread counts
+# Test parameters
 N=20000
 REP=250000
+SEQ_BASELINE_TIME=""
+PAR_BASELINE_TIME="" # This will be the 1-thread parallel run
 
 echo "========================================="
-echo "Performance Analysis with Different Thread Counts"
-echo "N=$N, REP=$REP"
+echo "Test Configuration:"
+echo "  N = $N"
+echo "  REP = $REP"
 echo "========================================="
 echo ""
 
-# Sequential baseline (if available)
-if [ -f "Prg" ]; then
-    echo "--- Sequential Baseline ---"
-    time ./Prg $N $REP
-    echo ""
+# --- Run Sequential Baseline ---
+echo "========================================="
+echo "Running Sequential Baseline (Prg_baseline)"
+echo "========================================="
+output_seq=$(./Prg_baseline $N $REP 2>&1)
+echo "$output_seq"
+# Extract time and save the full output line
+SEQ_BASELINE_OUTPUT=$(echo "$output_seq" | grep "Outputs:")
+SEQ_BASELINE_TIME=$(echo "$output_seq" | grep "Execution time:" | awk '{print $3}')
+if [ -z "$SEQ_BASELINE_TIME" ]; then
+    echo "Error: Could not extract sequential baseline time."
+    exit 1
 fi
-
-# Test with 2 threads
-echo "--- Running with 2 threads ---"
-export OMP_NUM_THREADS=2
-time ./PrgPAR_P5 $N $REP 2
+echo "Sequential Baseline Time: ${SEQ_BASELINE_TIME}s"
+echo "Sequential Baseline Output: ${SEQ_BASELINE_OUTPUT}"
 echo ""
 
-# Test with 4 threads
-echo "--- Running with 4 threads ---"
-export OMP_NUM_THREADS=4
-time ./PrgPAR_P5 $N $REP 4
+
+# Function to calculate speedup
+calculate_speedup() {
+    local time=$1
+    local threads=$2
+    
+    if [ ! -z "$PAR_BASELINE_TIME" ]; then
+        # Use awk for floating point calculations
+        local speedup_par=$(awk "BEGIN {print $PAR_BASELINE_TIME / $time}")
+        local efficiency=$(awk "BEGIN {print $speedup_par / $threads * 100}")
+        printf "  Speedup vs 1-thread parallel: %.2fx\n" $speedup_par
+        printf "  Parallel Efficiency:          %.2f%%\n" $efficiency
+    fi
+    
+    if [ ! -z "$SEQ_BASELINE_TIME" ]; then
+        local speedup_seq=$(awk "BEGIN {print $SEQ_BASELINE_TIME / $time}")
+        printf "  Speedup vs sequential code:   %.2fx\n" $speedup_seq
+    fi
+}
+
+# Test with different thread counts
+echo "========================================="
+echo "Performance Testing with P5 Solution (PrgPAR_P5)"
+echo "========================================="
 echo ""
 
-# Test with 6 threads (optimal for 6-core processor)
-echo "--- Running with 6 threads ---"
-export OMP_NUM_THREADS=6
-time ./PrgPAR_P5 $N $REP 6
-echo ""
+for threads in 1 2 4 6 8 12; do
+    echo "--- Testing with $threads threads ---"
+    export OMP_NUM_THREADS=$threads
+    
+    # Run and capture output
+    output_par=$(./PrgPAR_P5 $N $REP 2>&1)
+    echo "$output_par"
+    
+    # Extract execution time
+    exec_time_par=$(echo "$output_par" | grep "Execution time:" | awk '{print $3}')
+    
+    if [ -z "$exec_time_par" ]; then
+        echo "Error: Could not extract parallel execution time."
+        continue
+    fi
+    
+    # Store baseline time from 1 thread run
+    if [ $threads -eq 1 ]; then
+        PAR_BASELINE_TIME=$exec_time_par
+        echo "  (Parallel 1-thread baseline for this run)"
+    fi
+    
+    # Calculate speedups
+    calculate_speedup $exec_time_par $threads
+    echo ""
+done
 
-# Test with 12 threads (hyperthreading)
-echo "--- Running with 12 threads ---"
-export OMP_NUM_THREADS=12
-time ./PrgPAR_P5 $N $REP 12
-echo ""
-
-# Performance profiling with perf (if available)
 echo "========================================="
 echo "Detailed Performance Analysis (6 threads)"
 echo "========================================="
+
 export OMP_NUM_THREADS=6
 
 if command -v perf &> /dev/null; then
-    echo "Running perf stat..."
-    perf stat -e cycles,instructions,cache-references,cache-misses,branches,branch-misses ./PrgPAR_P5 $N $REP 6
-    echo ""
-    
-    echo "Running perf record..."
-    perf record -g ./PrgPAR_P5 $N $REP 6
-    echo "Generating perf report..."
-    perf report --stdio > perf_report_6threads.txt
-    echo "Report saved to perf_report_6threads.txt"
+    echo "Running perf stat on P5 solution..."
+    perf stat -e cycles,instructions,cache-references,cache-misses,L1-dcache-load-misses,branches,branch-misses ./PrgPAR_P5 $N $REP
 else
-    echo "perf not available, skipping profiling"
+    echo "perf not available, running standard execution..."
+    ./PrgPAR_P5 $N $REP
 fi
 
 echo ""
 echo "========================================="
+echo "Performance Summary"
+echo "========================================="
+echo "Sequential Baseline Time (Prg_baseline): ${SEQ_BASELINE_TIME}s"
+echo "Parallel 1-Thread Time (PrgPAR_P5): ${PAR_BASELINE_TIME}s"
+echo ""
+echo "Sequential Baseline Output: ${SEQ_BASELINE_OUTPUT}"
+echo "(Note: P5 solution output values are expected to differ)"
+echo ""
 echo "Job completed at: $(date)"
 echo "========================================="
 
-# Generate summary
-echo ""
-echo "Summary of results saved in this output file"
-echo "Check the speedup relative to the baseline"

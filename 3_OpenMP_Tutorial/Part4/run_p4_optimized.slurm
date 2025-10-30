@@ -7,6 +7,7 @@
 #SBATCH --time=00:02:00
 #SBATCH --mem-per-cpu=2G
 #SBATCH --partition=cuda-ext.q
+#SBATCH --nodelist=aolin-gpu-1
 
 SOURCE_FILE="PrgPAR_P4.c"
 EXEC_NAME="PrgPAR_P4"

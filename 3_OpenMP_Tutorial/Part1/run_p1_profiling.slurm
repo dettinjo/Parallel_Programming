@@ -1,62 +1,70 @@
 #!/bin/bash
 
 # =======================================================================
-# SLURM DIRECTIVES FOR PART 1
+# SLURM DIRECTIVES FOR PART 1 (Corrected & Combined)
 # =======================================================================
 # -- Set the job name for easy identification
 #SBATCH --job-name=P1_Seq_Profile
-
-# -- Set the file for standard output (%j will be replaced by the job ID)
 #SBATCH --output=p1_slurm_log_%j.out
-
-# -- Set the file for standard error
 #SBATCH --error=p1_slurm_log_%j.err
-
-# -- Request a single task for our sequential program
 #SBATCH --ntasks=1
-
-# -- Request 1 CPU core for the task
 #SBATCH --cpus-per-task=1
-
-# -- Set a time limit (e.g., 5 minutes). The job will be killed if it exceeds this.
 #SBATCH --time=00:05:00
-
-# -- Request memory for the job
 #SBATCH --mem-per-cpu=2G
-
-# -- Set partition for executing the job
 #SBATCH --partition=cuda-ext.q
+#SBATCH --nodelist=aolin-gpu-1
 
 # =======================================================================
-# EXECUTION LOGIC FOR PART 1
+# EXECUTION LOGIC FOR PART 1 (Corrected & Combined)
 # =======================================================================
 
-# -- Define filenames for clarity --
+# -- Define filenames --
+# We'll use the original Prg.c, which you should have
 SOURCE_FILE="Prg.c"
-EXEC_NAME="Prg"
+EXEC_NAME="Prg_P1"
+
+# -- Define explicit arguments for consistency --
+N_VAL=20000
+REP_VAL=250000
 
 # -- Start Message --
 echo "Slurm Job ID: $SLURM_JOB_ID"
-echo "Running Part 1 (P1) Sequential Profiling on node: $(hostname)"
+echo "Running Part 1 (P1) Sequential Timing & Profiling on node: $(hostname)"
+echo "Using $SOURCE_FILE with N=$N_VAL REP=$REP_VAL"
 echo "----------------------------------------------------"
 
 # -- Step 1: Compile the sequential code --
 echo "Compiling $SOURCE_FILE with -Ofast and -fno-inline..."
+# -fno-inline is critical for perf to see the separate functions
+# -lm is for the math library (fabs, trunc)
 gcc -Ofast -fno-inline "$SOURCE_FILE" -o "$EXEC_NAME" -lm
 
 # Check for compilation success
 if [ $? -ne 0 ]; then
-    echo "Compilation failed! Exiting."
+    echo "Compilation failed! Did you forget to upload $SOURCE_FILE?"
     exit 1
 fi
 echo "Compilation successful."
 echo "----------------------------------------------------"
 
-# -- Step 2: Run the program with perf record --
-echo "Running 'perf record' on the executable..."
-# This command will run the program and generate a 'perf.data' file
-perf record ./"$EXEC_NAME"
+# -- Step 2: Run 'perf stat' for total time (Task 1 of P1) --
+echo "Running 'perf stat' for overall timing..."
+# This will show the ~49.6 second runtime
+perf stat ./"$EXEC_NAME" $N_VAL $REP_VAL
 
 echo "----------------------------------------------------"
-echo "Job finished. The 'perf.data' file has been created."
-echo "To analyze the results, run 'perf report' in your terminal after the job completes."
+
+# -- Step 3: Run 'perf record' for profiling (Task 2 of P1) --
+echo "Running 'perf record' to generate profiling data..."
+# This will run the program and generate a 'perf.data' file
+perf record ./"$EXEC_NAME" $N_VAL $REP_VAL
+
+echo "----------------------------------------------------"
+echo "Job finished."
+echo "The 'perf stat' output above shows the true sequential time (~49.6s)."
+echo ""
+echo "A 'perf.data' file has been created."
+echo "To analyze the profiling results (like in the PDF), run:"
+echo "perf report"
+echo "----------------------------------------------------"
+
