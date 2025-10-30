@@ -1,0 +1,94 @@
+=== Laplace Solver Performance Comparison ===
+Node: aolin-gpu-1.uab.cat
+Date: jue oct 30 18:26:12 CET 2025
+
+Matrix size: 500x500
+
+Sequential:
+Time: 0.244918s
+
+OpenMP (1 threads):
+Time: 0.300958s, Speedup: 0.81x
+OpenMP (2 threads):
+Time: 0.165896s, Speedup: 1.48x
+OpenMP (3 threads):
+Time: 0.102897s, Speedup: 2.38x
+OpenMP (6 threads):
+Time: 0.054724s, Speedup: 4.48x
+OpenMP (12 threads):
+Time: 0.049225s, Speedup: 4.98x
+OpenMP (24 threads):
+Time: 0.027597s, Speedup: 8.87x
+
+Matrix size: 1000x1000
+
+Sequential:
+Time: 0.806033s
+
+OpenMP (1 threads):
+Time: 1.028811s, Speedup: 0.78x
+OpenMP (2 threads):
+Time: 0.513684s, Speedup: 1.57x
+OpenMP (3 threads):
+Time: 0.345045s, Speedup: 2.34x
+OpenMP (6 threads):
+Time: 0.205284s, Speedup: 3.93x
+OpenMP (12 threads):
+Time: 0.100581s, Speedup: 8.01x
+OpenMP (24 threads):
+Time: 0.094364s, Speedup: 8.54x
+
+Matrix size: 2000x2000
+
+Sequential:
+Time: 3.289740s
+
+OpenMP (1 threads):
+Time: 4.016997s, Speedup: 0.82x
+OpenMP (2 threads):
+Time: 1.978531s, Speedup: 1.66x
+OpenMP (3 threads):
+Time: 1.413979s, Speedup: 2.33x
+OpenMP (6 threads):
+Time: 0.746944s, Speedup: 4.40x
+OpenMP (12 threads):
+Time: 0.466013s, Speedup: 7.06x
+OpenMP (24 threads):
+Time: 0.450774s, Speedup: 7.30x
+
+Matrix size: 4000x4000
+
+Sequential:
+Time: 14.467858s
+
+OpenMP (1 threads):
+Time: 15.015137s, Speedup: 0.96x
+OpenMP (2 threads):
+Time: 7.615254s, Speedup: 1.90x
+OpenMP (3 threads):
+Time: 5.487128s, Speedup: 2.64x
+OpenMP (6 threads):
+Time: 3.020402s, Speedup: 4.79x
+OpenMP (12 threads):
+Time: 2.050413s, Speedup: 7.06x
+OpenMP (24 threads):
+Time: 1.983171s, Speedup: 7.30x
+
+Matrix size: 10000x10000
+
+Sequential:
+Time: 73.619531s
+
+OpenMP (1 threads):
+Time: 92.138744s, Speedup: 0.80x
+OpenMP (2 threads):
+Time: 46.162122s, Speedup: 1.59x
+OpenMP (3 threads):
+Time: 33.019155s, Speedup: 2.23x
+OpenMP (6 threads):
+Time: 18.272616s, Speedup: 4.03x
+OpenMP (12 threads):
+Time: 12.719975s, Speedup: 5.79x
+OpenMP (24 threads):
+Time: 12.938223s, Speedup: 5.69x
+

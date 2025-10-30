@@ -1,0 +1,52 @@
+===================================================
+Compiling all Laplace solver versions...
+===================================================
+Compilation complete.
+
+===================================================
+Starting Benchmark Suite
+Running on: aolin-gpu-1.uab.cat
+Date: mié oct  8 18:57:04 CEST 2025
+===================================================
+
+===================================================
+Benchmarking laplace-static (fixed 15x15 grid)
+===================================================
+Testing with iterations=100
+  Time: .003761512s
+
+Testing with iterations=1000
+  Time: .003699155s
+
+Testing with iterations=10000
+  Time: .003631874s
+
+===================================================
+Benchmarking laplace-dynamic
+===================================================
+Testing with size=100x100, iterations=100
+  Time: .009303890s
+
+Testing with size=100x100, iterations=1000
+  Time: .067636627s
+
+Testing with size=100x100, iterations=10000
+  Time: .648523566s
+
+Testing with size=1000x1000, iterations=100
+  Time: .580872348s
+
+Testing with size=1000x1000, iterations=1000
+  Time: 19.128169739s
+
+Testing with size=1000x1000, iterations=10000
+  Time: 135.314847439s
+
+Testing with size=4096x4096, iterations=100
+  Time: 9.476559599s
+
+Testing with size=4096x4096, iterations=1000
+  Time: 148.515945575s
+
+Testing with size=4096x4096, iterations=10000
+slurmstepd: error: *** JOB 94260 ON aolin-gpu-1 CANCELLED AT 2025-10-08T19:29:17 ***

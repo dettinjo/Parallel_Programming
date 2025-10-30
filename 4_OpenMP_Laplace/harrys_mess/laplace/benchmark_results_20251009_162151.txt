@@ -1,0 +1,28 @@
+Laplace Solver Benchmark Results
+Date: jue oct  9 16:21:51 CEST 2025
+Host: aolin-gpu-4.uab.cat
+Tolerance: 1e-9
+
+Version              Size         Iterations   Time (sec)     
+----------------------------------------------------------------
+laplace-static       15x15        100          .007204736     
+laplace-static       15x15        1000         .028218399     
+laplace-static       15x15        10000        .240072930     
+laplace-dynamic      100x100      100          .005597939     
+laplace-dynamic      100x100      1000         .026928125     
+laplace-dynamic      100x100      10000        .242369569     
+laplace-dynamic      1000x1000    100          .295951066     
+laplace-dynamic      1000x1000    1000         5.621069854    
+laplace-dynamic      1000x1000    10000        41.643350405   
+laplace-dynamic      4096x4096    100          5.040100751    
+laplace-dynamic      4096x4096    1000         61.146418301   
+laplace-dynamic      4096x4096    10000        SKIPPED        
+laplace-optimized    100x100      100          .004195437     
+laplace-optimized    100x100      1000         .017493074     
+laplace-optimized    100x100      10000        .152653640     
+laplace-optimized    1000x1000    100          .169304799     
+laplace-optimized    1000x1000    1000         3.116726179    
+laplace-optimized    1000x1000    10000        23.520345704   
+laplace-optimized    4096x4096    100          2.557487260    
+laplace-optimized    4096x4096    1000         31.236770860   
+laplace-optimized    4096x4096    10000        SKIPPED        

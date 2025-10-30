@@ -1,0 +1,121 @@
+===================================================
+Compiling all Laplace solver versions...
+===================================================
+Compilation complete.
+
+===================================================
+Starting Benchmark Suite
+Running on: aolin-gpu-1.uab.cat
+Date: mié oct  8 18:55:07 CEST 2025
+===================================================
+
+===================================================
+Benchmarking laplace-static (fixed 15x15 grid)
+===================================================
+Testing with iterations=100
+  Time: /var/spool/slurmd/job94258/slurm_script: línea 55: /usr/bin/time: No existe el fichero o el directorios
+
+Testing with iterations=1000
+  Time: /var/spool/slurmd/job94258/slurm_script: línea 55: /usr/bin/time: No existe el fichero o el directorios
+
+Testing with iterations=10000
+  Time: /var/spool/slurmd/job94258/slurm_script: línea 55: /usr/bin/time: No existe el fichero o el directorios
+
+===================================================
+Benchmarking laplace-dynamic
+===================================================
+Testing with size=100x100, iterations=100
+  Time: /var/spool/slurmd/job94258/slurm_script: línea 71: /usr/bin/time: No existe el fichero o el directorios
+
+Testing with size=100x100, iterations=1000
+  Time: /var/spool/slurmd/job94258/slurm_script: línea 71: /usr/bin/time: No existe el fichero o el directorios
+
+Testing with size=100x100, iterations=10000
+  Time: /var/spool/slurmd/job94258/slurm_script: línea 71: /usr/bin/time: No existe el fichero o el directorios
+
+Testing with size=1000x1000, iterations=100
+  Time: /var/spool/slurmd/job94258/slurm_script: línea 71: /usr/bin/time: No existe el fichero o el directorios
+
+Testing with size=1000x1000, iterations=1000
+  Time: /var/spool/slurmd/job94258/slurm_script: línea 71: /usr/bin/time: No existe el fichero o el directorios
+
+Testing with size=1000x1000, iterations=10000
+  Time: /var/spool/slurmd/job94258/slurm_script: línea 71: /usr/bin/time: No existe el fichero o el directorios
+
+Testing with size=4096x4096, iterations=100
+  Time: /var/spool/slurmd/job94258/slurm_script: línea 71: /usr/bin/time: No existe el fichero o el directorios
+
+Testing with size=4096x4096, iterations=1000
+  Time: /var/spool/slurmd/job94258/slurm_script: línea 71: /usr/bin/time: No existe el fichero o el directorios
+
+Testing with size=4096x4096, iterations=10000
+  Time: /var/spool/slurmd/job94258/slurm_script: línea 71: /usr/bin/time: No existe el fichero o el directorios
+
+===================================================
+Benchmarking laplace-optimized
+===================================================
+Testing with size=100x100, iterations=100
+  Time: /var/spool/slurmd/job94258/slurm_script: línea 88: /usr/bin/time: No existe el fichero o el directorios
+
+Testing with size=100x100, iterations=1000
+  Time: /var/spool/slurmd/job94258/slurm_script: línea 88: /usr/bin/time: No existe el fichero o el directorios
+
+Testing with size=100x100, iterations=10000
+  Time: /var/spool/slurmd/job94258/slurm_script: línea 88: /usr/bin/time: No existe el fichero o el directorios
+
+Testing with size=1000x1000, iterations=100
+  Time: /var/spool/slurmd/job94258/slurm_script: línea 88: /usr/bin/time: No existe el fichero o el directorios
+
+Testing with size=1000x1000, iterations=1000
+  Time: /var/spool/slurmd/job94258/slurm_script: línea 88: /usr/bin/time: No existe el fichero o el directorios
+
+Testing with size=1000x1000, iterations=10000
+  Time: /var/spool/slurmd/job94258/slurm_script: línea 88: /usr/bin/time: No existe el fichero o el directorios
+
+Testing with size=4096x4096, iterations=100
+  Time: /var/spool/slurmd/job94258/slurm_script: línea 88: /usr/bin/time: No existe el fichero o el directorios
+
+Testing with size=4096x4096, iterations=1000
+  Time: /var/spool/slurmd/job94258/slurm_script: línea 88: /usr/bin/time: No existe el fichero o el directorios
+
+Testing with size=4096x4096, iterations=10000
+  Time: /var/spool/slurmd/job94258/slurm_script: línea 88: /usr/bin/time: No existe el fichero o el directorios
+
+
+===================================================
+Benchmark Complete!
+===================================================
+Results saved to: benchmark_results_20251008_185507.txt
+
+Summary of results:
+Laplace Solver Benchmark Results
+=================================
+Date: mié oct  8 18:55:07 CEST 2025
+Host: aolin-gpu-1.uab.cat
+Tolerance: 1e-9
+
+Version              Size       Iterations      Time (seconds) 
+-------------------- ---------- --------------- ---------------
+laplace-static       15         100             /var/spool/slurmd/job94258/slurm_script: línea 55: /usr/bin/time: No existe el fichero o el directorio
+laplace-static       15         1000            /var/spool/slurmd/job94258/slurm_script: línea 55: /usr/bin/time: No existe el fichero o el directorio
+laplace-static       15         10000           /var/spool/slurmd/job94258/slurm_script: línea 55: /usr/bin/time: No existe el fichero o el directorio
+laplace-dynamic      100x100    100             /var/spool/slurmd/job94258/slurm_script: línea 71: /usr/bin/time: No existe el fichero o el directorio
+laplace-dynamic      100x100    1000            /var/spool/slurmd/job94258/slurm_script: línea 71: /usr/bin/time: No existe el fichero o el directorio
+laplace-dynamic      100x100    10000           /var/spool/slurmd/job94258/slurm_script: línea 71: /usr/bin/time: No existe el fichero o el directorio
+laplace-dynamic      1000x1000  100             /var/spool/slurmd/job94258/slurm_script: línea 71: /usr/bin/time: No existe el fichero o el directorio
+laplace-dynamic      1000x1000  1000            /var/spool/slurmd/job94258/slurm_script: línea 71: /usr/bin/time: No existe el fichero o el directorio
+laplace-dynamic      1000x1000  10000           /var/spool/slurmd/job94258/slurm_script: línea 71: /usr/bin/time: No existe el fichero o el directorio
+laplace-dynamic      4096x4096  100             /var/spool/slurmd/job94258/slurm_script: línea 71: /usr/bin/time: No existe el fichero o el directorio
+laplace-dynamic      4096x4096  1000            /var/spool/slurmd/job94258/slurm_script: línea 71: /usr/bin/time: No existe el fichero o el directorio
+laplace-dynamic      4096x4096  10000           /var/spool/slurmd/job94258/slurm_script: línea 71: /usr/bin/time: No existe el fichero o el directorio
+laplace-optimized    100x100    100             /var/spool/slurmd/job94258/slurm_script: línea 88: /usr/bin/time: No existe el fichero o el directorio
+laplace-optimized    100x100    1000            /var/spool/slurmd/job94258/slurm_script: línea 88: /usr/bin/time: No existe el fichero o el directorio
+laplace-optimized    100x100    10000           /var/spool/slurmd/job94258/slurm_script: línea 88: /usr/bin/time: No existe el fichero o el directorio
+laplace-optimized    1000x1000  100             /var/spool/slurmd/job94258/slurm_script: línea 88: /usr/bin/time: No existe el fichero o el directorio
+laplace-optimized    1000x1000  1000            /var/spool/slurmd/job94258/slurm_script: línea 88: /usr/bin/time: No existe el fichero o el directorio
+laplace-optimized    1000x1000  10000           /var/spool/slurmd/job94258/slurm_script: línea 88: /usr/bin/time: No existe el fichero o el directorio
+laplace-optimized    4096x4096  100             /var/spool/slurmd/job94258/slurm_script: línea 88: /usr/bin/time: No existe el fichero o el directorio
+laplace-optimized    4096x4096  1000            /var/spool/slurmd/job94258/slurm_script: línea 88: /usr/bin/time: No existe el fichero o el directorio
+laplace-optimized    4096x4096  10000           /var/spool/slurmd/job94258/slurm_script: línea 88: /usr/bin/time: No existe el fichero o el directorio
+
+===================================================

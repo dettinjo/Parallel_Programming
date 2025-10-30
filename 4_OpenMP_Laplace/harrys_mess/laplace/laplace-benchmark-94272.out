@@ -1,0 +1,121 @@
+===================================================
+Compiling all Laplace solver versions...
+===================================================
+Compilation complete.
+
+===================================================
+Starting Benchmark Suite
+Running on: aolin-gpu-1.uab.cat
+Date: mié oct  8 19:28:24 CEST 2025
+===================================================
+
+===================================================
+Benchmarking laplace-static (fixed 15x15 grid)
+===================================================
+Testing with iterations=100
+  Time: .003333867s
+
+Testing with iterations=1000
+  Time: .003328287s
+
+Testing with iterations=2000
+  Time: .003362325s
+
+===================================================
+Benchmarking laplace-dynamic
+===================================================
+Testing with size=100x100, iterations=100
+  Time: .009073205s
+
+Testing with size=100x100, iterations=1000
+  Time: .068386206s
+
+Testing with size=100x100, iterations=2000
+  Time: .133814477s
+
+Testing with size=1000x1000, iterations=100
+  Time: .595605136s
+
+Testing with size=1000x1000, iterations=1000
+  Time: 19.617716957s
+
+Testing with size=1000x1000, iterations=2000
+  Time: 52.479886817s
+
+Testing with size=4096x4096, iterations=100
+  Time: 9.469299070s
+
+Testing with size=4096x4096, iterations=1000
+  Time: 148.305033124s
+
+Testing with size=4096x4096, iterations=2000
+  Time: 350.506379798s
+
+===================================================
+Benchmarking laplace-optimized
+===================================================
+Testing with size=100x100, iterations=100
+  Time: .006748459s
+
+Testing with size=100x100, iterations=1000
+  Time: .034139115s
+
+Testing with size=100x100, iterations=2000
+  Time: .065016327s
+
+Testing with size=1000x1000, iterations=100
+  Time: .440664474s
+
+Testing with size=1000x1000, iterations=1000
+  Time: 14.779690890s
+
+Testing with size=1000x1000, iterations=2000
+  Time: 39.887565120s
+
+Testing with size=4096x4096, iterations=100
+  Time: 5.705989915s
+
+Testing with size=4096x4096, iterations=1000
+  Time: 99.527860776s
+
+Testing with size=4096x4096, iterations=2000
+  Time: 241.885283106s
+
+
+===================================================
+Benchmark Complete!
+===================================================
+Results saved to: benchmark_results_20251008_192824.txt
+
+Summary of results:
+Laplace Solver Benchmark Results
+=================================
+Date: mié oct  8 19:28:24 CEST 2025
+Host: aolin-gpu-1.uab.cat
+Tolerance: 1e-9
+
+Version              Size       Iterations      Time (seconds) 
+-------------------- ---------- --------------- ---------------
+laplace-static       15         100             .003333867     
+laplace-static       15         1000            .003328287     
+laplace-static       15         2000            .003362325     
+laplace-dynamic      100x100    100             .009073205     
+laplace-dynamic      100x100    1000            .068386206     
+laplace-dynamic      100x100    2000            .133814477     
+laplace-dynamic      1000x1000  100             .595605136     
+laplace-dynamic      1000x1000  1000            19.617716957   
+laplace-dynamic      1000x1000  2000            52.479886817   
+laplace-dynamic      4096x4096  100             9.469299070    
+laplace-dynamic      4096x4096  1000            148.305033124  
+laplace-dynamic      4096x4096  2000            350.506379798  
+laplace-optimized    100x100    100             .006748459     
+laplace-optimized    100x100    1000            .034139115     
+laplace-optimized    100x100    2000            .065016327     
+laplace-optimized    1000x1000  100             .440664474     
+laplace-optimized    1000x1000  1000            14.779690890   
+laplace-optimized    1000x1000  2000            39.887565120   
+laplace-optimized    4096x4096  100             5.705989915    
+laplace-optimized    4096x4096  1000            99.527860776   
+laplace-optimized    4096x4096  2000            241.885283106  
+
+===================================================

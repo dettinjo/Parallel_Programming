@@ -1,0 +1,773 @@
+=== Laplace Solver v2 Performance Comparison ===
+Node: aolin-gpu-1.uab.cat
+Date: jue oct 30 23:06:02 CET 2025
+
+Matrix size: 500x500
+
+Sequential:
+Time: 0.244949s
+
+_______________________________
+OpenMP (1 threads):
+________________________________
+Time: 0.330139s, Speedup: 0.74x
+
+Time: 0.291729s, Speedup: 0.84x
+
+Time: 0.302900s, Speedup: 0.81x
+
+--- Summary for 500x500 ---
+Sequential: 0.244949s (baseline)
+v1:           0.330139s (0.74x)
+v2:           0.291729s (0.84x)
+v3:           0.302900s (0.81x)
+
+_______________________________
+OpenMP (2 threads):
+________________________________
+Time: 0.151568s, Speedup: 1.62x
+
+Time: 0.146890s, Speedup: 1.67x
+
+Time: 0.153488s, Speedup: 1.60x
+
+--- Summary for 500x500 ---
+Sequential: 0.244949s (baseline)
+v1:           0.151568s (1.62x)
+v2:           0.146890s (1.67x)
+v3:           0.153488s (1.60x)
+
+_______________________________
+OpenMP (3 threads):
+________________________________
+Time: 0.102218s, Speedup: 2.40x
+
+Time: 0.099423s, Speedup: 2.46x
+
+Time: 0.105218s, Speedup: 2.33x
+
+--- Summary for 500x500 ---
+Sequential: 0.244949s (baseline)
+v1:           0.102218s (2.40x)
+v2:           0.099423s (2.46x)
+v3:           0.105218s (2.33x)
+
+_______________________________
+OpenMP (6 threads):
+________________________________
+Time: 0.054882s, Speedup: 4.46x
+
+Time: 0.052989s, Speedup: 4.62x
+
+Time: 0.057655s, Speedup: 4.25x
+
+--- Summary for 500x500 ---
+Sequential: 0.244949s (baseline)
+v1:           0.054882s (4.46x)
+v2:           0.052989s (4.62x)
+v3:           0.057655s (4.25x)
+
+_______________________________
+OpenMP (12 threads):
+________________________________
+Time: 0.030526s, Speedup: 8.02x
+
+Time: 0.029422s, Speedup: 8.33x
+
+Time: 0.033444s, Speedup: 7.32x
+
+--- Summary for 500x500 ---
+Sequential: 0.244949s (baseline)
+v1:           0.030526s (8.02x)
+v2:           0.029422s (8.33x)
+v3:           0.033444s (7.32x)
+
+_______________________________
+OpenMP (24 threads):
+________________________________
+Time: 0.027668s, Speedup: 8.85x
+
+Time: 0.023525s, Speedup: 10.41x
+
+Time: 0.028402s, Speedup: 8.62x
+
+--- Summary for 500x500 ---
+Sequential: 0.244949s (baseline)
+v1:           0.027668s (8.85x)
+v2:           0.023525s (10.41x)
+v3:           0.028402s (8.62x)
+
+
+Matrix size: 1000x1000
+
+Sequential:
+Time: 0.802702s
+
+_______________________________
+OpenMP (1 threads):
+________________________________
+Time: 1.026519s, Speedup: 0.78x
+
+Time: 0.971085s, Speedup: 0.83x
+
+Time: 1.003335s, Speedup: 0.80x
+
+--- Summary for 1000x1000 ---
+Sequential: 0.802702s (baseline)
+v1:           1.026519s (0.78x)
+v2:           0.971085s (0.83x)
+v3:           1.003335s (0.80x)
+
+_______________________________
+OpenMP (2 threads):
+________________________________
+Time: 0.516228s, Speedup: 1.55x
+
+Time: 0.486554s, Speedup: 1.65x
+
+Time: 0.509413s, Speedup: 1.58x
+
+--- Summary for 1000x1000 ---
+Sequential: 0.802702s (baseline)
+v1:           0.516228s (1.55x)
+v2:           0.486554s (1.65x)
+v3:           0.509413s (1.58x)
+
+_______________________________
+OpenMP (3 threads):
+________________________________
+Time: 0.346230s, Speedup: 2.32x
+
+Time: 0.328648s, Speedup: 2.44x
+
+Time: 0.346606s, Speedup: 2.32x
+
+--- Summary for 1000x1000 ---
+Sequential: 0.802702s (baseline)
+v1:           0.346230s (2.32x)
+v2:           0.328648s (2.44x)
+v3:           0.346606s (2.32x)
+
+_______________________________
+OpenMP (6 threads):
+________________________________
+Time: 0.182364s, Speedup: 4.40x
+
+Time: 0.172015s, Speedup: 4.67x
+
+Time: 0.185953s, Speedup: 4.32x
+
+--- Summary for 1000x1000 ---
+Sequential: 0.802702s (baseline)
+v1:           0.182364s (4.40x)
+v2:           0.172015s (4.67x)
+v3:           0.185953s (4.32x)
+
+_______________________________
+OpenMP (12 threads):
+________________________________
+Time: 0.100332s, Speedup: 8.00x
+
+Time: 0.093185s, Speedup: 8.61x
+
+Time: 0.103975s, Speedup: 7.72x
+
+--- Summary for 1000x1000 ---
+Sequential: 0.802702s (baseline)
+v1:           0.100332s (8.00x)
+v2:           0.093185s (8.61x)
+v3:           0.103975s (7.72x)
+
+_______________________________
+OpenMP (24 threads):
+________________________________
+Time: 0.092211s, Speedup: 8.71x
+
+Time: 0.075967s, Speedup: 10.57x
+
+Time: 0.088676s, Speedup: 9.05x
+
+--- Summary for 1000x1000 ---
+Sequential: 0.802702s (baseline)
+v1:           0.092211s (8.71x)
+v2:           0.075967s (10.57x)
+v3:           0.088676s (9.05x)
+
+
+Matrix size: 1500x1500
+
+Sequential:
+Time: 1.884272s
+
+_______________________________
+OpenMP (1 threads):
+________________________________
+Time: 2.304583s, Speedup: 0.82x
+
+Time: 2.162480s, Speedup: 0.87x
+
+Time: 2.154873s, Speedup: 0.87x
+
+--- Summary for 1500x1500 ---
+Sequential: 1.884272s (baseline)
+v1:           2.304583s (0.82x)
+v2:           2.162480s (0.87x)
+v3:           2.154873s (0.87x)
+
+_______________________________
+OpenMP (2 threads):
+________________________________
+Time: 1.091985s, Speedup: 1.73x
+
+Time: 1.017599s, Speedup: 1.85x
+
+Time: 1.066731s, Speedup: 1.77x
+
+--- Summary for 1500x1500 ---
+Sequential: 1.884272s (baseline)
+v1:           1.091985s (1.73x)
+v2:           1.017599s (1.85x)
+v3:           1.066731s (1.77x)
+
+_______________________________
+OpenMP (3 threads):
+________________________________
+Time: 0.749917s, Speedup: 2.51x
+
+Time: 0.695453s, Speedup: 2.71x
+
+Time: 0.729003s, Speedup: 2.58x
+
+--- Summary for 1500x1500 ---
+Sequential: 1.884272s (baseline)
+v1:           0.749917s (2.51x)
+v2:           0.695453s (2.71x)
+v3:           0.729003s (2.58x)
+
+_______________________________
+OpenMP (6 threads):
+________________________________
+Time: 0.436902s, Speedup: 4.31x
+
+Time: 0.358515s, Speedup: 5.26x
+
+Time: 0.382391s, Speedup: 4.93x
+
+--- Summary for 1500x1500 ---
+Sequential: 1.884272s (baseline)
+v1:           0.436902s (4.31x)
+v2:           0.358515s (5.26x)
+v3:           0.382391s (4.93x)
+
+_______________________________
+OpenMP (12 threads):
+________________________________
+Time: 0.212533s, Speedup: 8.87x
+
+Time: 0.193451s, Speedup: 9.74x
+
+Time: 0.210773s, Speedup: 8.94x
+
+--- Summary for 1500x1500 ---
+Sequential: 1.884272s (baseline)
+v1:           0.212533s (8.87x)
+v2:           0.193451s (9.74x)
+v3:           0.210773s (8.94x)
+
+_______________________________
+OpenMP (24 threads):
+________________________________
+Time: 0.210835s, Speedup: 8.94x
+
+Time: 0.158625s, Speedup: 11.88x
+
+Time: 0.182277s, Speedup: 10.34x
+
+--- Summary for 1500x1500 ---
+Sequential: 1.884272s (baseline)
+v1:           0.210835s (8.94x)
+v2:           0.158625s (11.88x)
+v3:           0.182277s (10.34x)
+
+
+Matrix size: 2000x2000
+
+Sequential:
+Time: 3.292042s
+
+_______________________________
+OpenMP (1 threads):
+________________________________
+Time: 4.020754s, Speedup: 0.82x
+
+Time: 3.680936s, Speedup: 0.89x
+
+Time: 3.703334s, Speedup: 0.89x
+
+--- Summary for 2000x2000 ---
+Sequential: 3.292042s (baseline)
+v1:           4.020754s (0.82x)
+v2:           3.680936s (0.89x)
+v3:           3.703334s (0.89x)
+
+_______________________________
+OpenMP (2 threads):
+________________________________
+Time: 1.982612s, Speedup: 1.66x
+
+Time: 1.842351s, Speedup: 1.79x
+
+Time: 1.859850s, Speedup: 1.77x
+
+--- Summary for 2000x2000 ---
+Sequential: 3.292042s (baseline)
+v1:           1.982612s (1.66x)
+v2:           1.842351s (1.79x)
+v3:           1.859850s (1.77x)
+
+_______________________________
+OpenMP (3 threads):
+________________________________
+Time: 1.562474s, Speedup: 2.11x
+
+Time: 1.277244s, Speedup: 2.58x
+
+Time: 1.253131s, Speedup: 2.63x
+
+--- Summary for 2000x2000 ---
+Sequential: 3.292042s (baseline)
+v1:           1.562474s (2.11x)
+v2:           1.277244s (2.58x)
+v3:           1.253131s (2.63x)
+
+_______________________________
+OpenMP (6 threads):
+________________________________
+Time: 0.746443s, Speedup: 4.41x
+
+Time: 0.683371s, Speedup: 4.82x
+
+Time: 0.668077s, Speedup: 4.93x
+
+--- Summary for 2000x2000 ---
+Sequential: 3.292042s (baseline)
+v1:           0.746443s (4.41x)
+v2:           0.683371s (4.82x)
+v3:           0.668077s (4.93x)
+
+_______________________________
+OpenMP (12 threads):
+________________________________
+Time: 0.470213s, Speedup: 7.00x
+
+Time: 0.432120s, Speedup: 7.62x
+
+Time: 0.372997s, Speedup: 8.83x
+
+--- Summary for 2000x2000 ---
+Sequential: 3.292042s (baseline)
+v1:           0.470213s (7.00x)
+v2:           0.432120s (7.62x)
+v3:           0.372997s (8.83x)
+
+_______________________________
+OpenMP (24 threads):
+________________________________
+Time: 0.451399s, Speedup: 7.29x
+
+Time: 0.385453s, Speedup: 8.54x
+
+Time: 0.332935s, Speedup: 9.89x
+
+--- Summary for 2000x2000 ---
+Sequential: 3.292042s (baseline)
+v1:           0.451399s (7.29x)
+v2:           0.385453s (8.54x)
+v3:           0.332935s (9.89x)
+
+
+Matrix size: 2500x2500
+
+Sequential:
+Time: 5.018949s
+
+_______________________________
+OpenMP (1 threads):
+________________________________
+Time: 6.157967s, Speedup: 0.82x
+
+Time: 5.632413s, Speedup: 0.89x
+
+Time: 5.691116s, Speedup: 0.88x
+
+--- Summary for 2500x2500 ---
+Sequential: 5.018949s (baseline)
+v1:           6.157967s (0.82x)
+v2:           5.632413s (0.89x)
+v3:           5.691116s (0.88x)
+
+_______________________________
+OpenMP (2 threads):
+________________________________
+Time: 3.066607s, Speedup: 1.64x
+
+Time: 2.847556s, Speedup: 1.76x
+
+Time: 2.852651s, Speedup: 1.76x
+
+--- Summary for 2500x2500 ---
+Sequential: 5.018949s (baseline)
+v1:           3.066607s (1.64x)
+v2:           2.847556s (1.76x)
+v3:           2.852651s (1.76x)
+
+_______________________________
+OpenMP (3 threads):
+________________________________
+Time: 2.139482s, Speedup: 2.35x
+
+Time: 1.979028s, Speedup: 2.54x
+
+Time: 1.935921s, Speedup: 2.59x
+
+--- Summary for 2500x2500 ---
+Sequential: 5.018949s (baseline)
+v1:           2.139482s (2.35x)
+v2:           1.979028s (2.54x)
+v3:           1.935921s (2.59x)
+
+_______________________________
+OpenMP (6 threads):
+________________________________
+Time: 1.193494s, Speedup: 4.21x
+
+Time: 1.082213s, Speedup: 4.64x
+
+Time: 1.026405s, Speedup: 4.89x
+
+--- Summary for 2500x2500 ---
+Sequential: 5.018949s (baseline)
+v1:           1.193494s (4.21x)
+v2:           1.082213s (4.64x)
+v3:           1.026405s (4.89x)
+
+_______________________________
+OpenMP (12 threads):
+________________________________
+Time: 0.792873s, Speedup: 6.33x
+
+Time: 0.741024s, Speedup: 6.77x
+
+Time: 0.578276s, Speedup: 8.68x
+
+--- Summary for 2500x2500 ---
+Sequential: 5.018949s (baseline)
+v1:           0.792873s (6.33x)
+v2:           0.741024s (6.77x)
+v3:           0.578276s (8.68x)
+
+_______________________________
+OpenMP (24 threads):
+________________________________
+Time: 0.780721s, Speedup: 6.43x
+
+Time: 0.692447s, Speedup: 7.25x
+
+Time: 0.525016s, Speedup: 9.56x
+
+--- Summary for 2500x2500 ---
+Sequential: 5.018949s (baseline)
+v1:           0.780721s (6.43x)
+v2:           0.692447s (7.25x)
+v3:           0.525016s (9.56x)
+
+
+Matrix size: 5000x5000
+
+Sequential:
+Time: 19.216747s
+
+_______________________________
+OpenMP (1 threads):
+________________________________
+Time: 23.550795s, Speedup: 0.82x
+
+Time: 21.453578s, Speedup: 0.90x
+
+Time: 21.707661s, Speedup: 0.89x
+
+--- Summary for 5000x5000 ---
+Sequential: 19.216747s (baseline)
+v1:           23.550795s (0.82x)
+v2:           21.453578s (0.90x)
+v3:           21.707661s (0.89x)
+
+_______________________________
+OpenMP (2 threads):
+________________________________
+Time: 11.790061s, Speedup: 1.63x
+
+Time: 10.853728s, Speedup: 1.77x
+
+Time: 10.868178s, Speedup: 1.77x
+
+--- Summary for 5000x5000 ---
+Sequential: 19.216747s (baseline)
+v1:           11.790061s (1.63x)
+v2:           10.853728s (1.77x)
+v3:           10.868178s (1.77x)
+
+_______________________________
+OpenMP (3 threads):
+________________________________
+Time: 8.374008s, Speedup: 2.29x
+
+Time: 7.656479s, Speedup: 2.51x
+
+Time: 7.269825s, Speedup: 2.64x
+
+--- Summary for 5000x5000 ---
+Sequential: 19.216747s (baseline)
+v1:           8.374008s (2.29x)
+v2:           7.656479s (2.51x)
+v3:           7.269825s (2.64x)
+
+_______________________________
+OpenMP (6 threads):
+________________________________
+Time: 4.687508s, Speedup: 4.10x
+
+Time: 4.236367s, Speedup: 4.54x
+
+Time: 3.865123s, Speedup: 4.97x
+
+--- Summary for 5000x5000 ---
+Sequential: 19.216747s (baseline)
+v1:           4.687508s (4.10x)
+v2:           4.236367s (4.54x)
+v3:           3.865123s (4.97x)
+
+_______________________________
+OpenMP (12 threads):
+________________________________
+Time: 3.205526s, Speedup: 5.99x
+
+Time: 2.980072s, Speedup: 6.45x
+
+Time: 2.157915s, Speedup: 8.91x
+
+--- Summary for 5000x5000 ---
+Sequential: 19.216747s (baseline)
+v1:           3.205526s (5.99x)
+v2:           2.980072s (6.45x)
+v3:           2.157915s (8.91x)
+
+_______________________________
+OpenMP (24 threads):
+________________________________
+Time: 3.184637s, Speedup: 6.03x
+
+Time: 2.772361s, Speedup: 6.93x
+
+Time: 1.950787s, Speedup: 9.85x
+
+--- Summary for 5000x5000 ---
+Sequential: 19.216747s (baseline)
+v1:           3.184637s (6.03x)
+v2:           2.772361s (6.93x)
+v3:           1.950787s (9.85x)
+
+
+Matrix size: 7500x7500
+
+Sequential:
+Time: 41.656348s
+
+_______________________________
+OpenMP (1 threads):
+________________________________
+Time: 51.355551s, Speedup: 0.81x
+
+Time: 48.104115s, Speedup: 0.87x
+
+Time: 48.113064s, Speedup: 0.87x
+
+--- Summary for 7500x7500 ---
+Sequential: 41.656348s (baseline)
+v1:           51.355551s (0.81x)
+v2:           48.104115s (0.87x)
+v3:           48.113064s (0.87x)
+
+_______________________________
+OpenMP (2 threads):
+________________________________
+Time: 26.124416s, Speedup: 1.59x
+
+Time: 23.992557s, Speedup: 1.74x
+
+Time: 24.059366s, Speedup: 1.73x
+
+--- Summary for 7500x7500 ---
+Sequential: 41.656348s (baseline)
+v1:           26.124416s (1.59x)
+v2:           23.992557s (1.74x)
+v3:           24.059366s (1.73x)
+
+_______________________________
+OpenMP (3 threads):
+________________________________
+Time: 18.557907s, Speedup: 2.24x
+
+Time: 16.783413s, Speedup: 2.48x
+
+Time: 16.274090s, Speedup: 2.56x
+
+--- Summary for 7500x7500 ---
+Sequential: 41.656348s (baseline)
+v1:           18.557907s (2.24x)
+v2:           16.783413s (2.48x)
+v3:           16.274090s (2.56x)
+
+_______________________________
+OpenMP (6 threads):
+________________________________
+Time: 10.366416s, Speedup: 4.02x
+
+Time: 9.308640s, Speedup: 4.48x
+
+Time: 8.497048s, Speedup: 4.90x
+
+--- Summary for 7500x7500 ---
+Sequential: 41.656348s (baseline)
+v1:           10.366416s (4.02x)
+v2:           9.308640s (4.48x)
+v3:           8.497048s (4.90x)
+
+_______________________________
+OpenMP (12 threads):
+________________________________
+Time: 7.157370s, Speedup: 5.82x
+
+Time: 6.646204s, Speedup: 6.27x
+
+Time: 4.742103s, Speedup: 8.78x
+
+--- Summary for 7500x7500 ---
+Sequential: 41.656348s (baseline)
+v1:           7.157370s (5.82x)
+v2:           6.646204s (6.27x)
+v3:           4.742103s (8.78x)
+
+_______________________________
+OpenMP (24 threads):
+________________________________
+Time: 7.166213s, Speedup: 5.81x
+
+Time: 6.226933s, Speedup: 6.69x
+
+Time: 4.279306s, Speedup: 9.73x
+
+--- Summary for 7500x7500 ---
+Sequential: 41.656348s (baseline)
+v1:           7.166213s (5.81x)
+v2:           6.226933s (6.69x)
+v3:           4.279306s (9.73x)
+
+
+Matrix size: 10000x10000
+
+Sequential:
+Time: 75.189130s
+
+_______________________________
+OpenMP (1 threads):
+________________________________
+Time: 92.144536s, Speedup: 0.82x
+
+Time: 83.325657s, Speedup: 0.90x
+
+Time: 83.700811s, Speedup: 0.90x
+
+--- Summary for 10000x10000 ---
+Sequential: 75.189130s (baseline)
+v1:           92.144536s (0.82x)
+v2:           83.325657s (0.90x)
+v3:           83.700811s (0.90x)
+
+_______________________________
+OpenMP (2 threads):
+________________________________
+Time: 45.967912s, Speedup: 1.64x
+
+Time: 42.314963s, Speedup: 1.78x
+
+Time: 42.317616s, Speedup: 1.78x
+
+--- Summary for 10000x10000 ---
+Sequential: 75.189130s (baseline)
+v1:           45.967912s (1.64x)
+v2:           42.314963s (1.78x)
+v3:           42.317616s (1.78x)
+
+_______________________________
+OpenMP (3 threads):
+________________________________
+Time: 33.077175s, Speedup: 2.27x
+
+Time: 29.113434s, Speedup: 2.58x
+
+Time: 28.268804s, Speedup: 2.66x
+
+--- Summary for 10000x10000 ---
+Sequential: 75.189130s (baseline)
+v1:           33.077175s (2.27x)
+v2:           29.113434s (2.58x)
+v3:           28.268804s (2.66x)
+
+_______________________________
+OpenMP (6 threads):
+________________________________
+Time: 18.262224s, Speedup: 4.12x
+
+Time: 16.439105s, Speedup: 4.57x
+
+Time: 14.927684s, Speedup: 5.04x
+
+--- Summary for 10000x10000 ---
+Sequential: 75.189130s (baseline)
+v1:           18.262224s (4.12x)
+v2:           16.439105s (4.57x)
+v3:           14.927684s (5.04x)
+
+_______________________________
+OpenMP (12 threads):
+________________________________
+Time: 12.732125s, Speedup: 5.91x
+
+Time: 11.762274s, Speedup: 6.39x
+
+Time: 8.296316s, Speedup: 9.06x
+
+--- Summary for 10000x10000 ---
+Sequential: 75.189130s (baseline)
+v1:           12.732125s (5.91x)
+v2:           11.762274s (6.39x)
+v3:           8.296316s (9.06x)
+
+_______________________________
+OpenMP (24 threads):
+________________________________
+Time: 13.007782s, Speedup: 5.78x
+
+Time: 11.234667s, Speedup: 6.69x
+
+Time: 7.583954s, Speedup: 9.91x
+
+--- Summary for 10000x10000 ---
+Sequential: 75.189130s (baseline)
+v1:           13.007782s (5.78x)
+v2:           11.234667s (6.69x)
+v3:           7.583954s (9.91x)
+
+
+Results saved to laplace_performance.csv and 

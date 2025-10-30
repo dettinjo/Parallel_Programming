@@ -1,0 +1,149 @@
+=== Laplace Solver Performance Comparison ===
+Node: aolin-gpu-1.uab.cat
+Date: jue oct 30 22:48:48 CET 2025
+Arquitectura:                        x86_64
+modo(s) de operación de las CPUs:    32-bit, 64-bit
+Orden de los bytes:                  Little Endian
+CPU(s):                              24
+Lista de la(s) CPU(s) en línea:      0-23
+Hilo(s) de procesamiento por núcleo: 2
+Núcleo(s) por «socket»:              6
+«Socket(s)»                          2
+Modo(s) NUMA:                        1
+ID de fabricante:                    GenuineIntel
+Familia de CPU:                      6
+Modelo:                              44
+Nombre del modelo:                   Intel(R) Xeon(R) CPU           E5645  @ 2.40GHz
+Revisión:                            2
+CPU MHz:                             2393.968
+BogoMIPS:                            4787.93
+Caché L1d:                           32K
+Caché L1i:                           32K
+Caché L2:                            256K
+Caché L3:                            12288K
+CPU(s) del nodo NUMA 0:              0-23
+Indicadores:                         fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf pni pclmulqdq dtes64 monitor ds_cpl smx est tm2 ssse3 cx16 xtpr pdcm pcid dca sse4_1 sse4_2 popcnt aes lahf_lm epb pti ssbd ibrs ibpb stibp dtherm ida arat flush_l1d
+---------------------------------------------
+Matrix size: 500x500
+
+Sequential:
+Time: 0.245090s
+
+_______________________________
+BASELINE (1 threads):
+_______________________________
+Time: 0.244488s
+
+OpenMP (1 threads):
+Time: 0.302177s, Speedup: 0.81x
+_______________________________
+BASELINE (3 threads):
+_______________________________
+Time: 0.245756s
+
+OpenMP (3 threads):
+Time: 0.102787s, Speedup: 2.39x
+_______________________________
+BASELINE (6 threads):
+_______________________________
+Time: 0.244284s
+
+OpenMP (6 threads):
+Time: 0.054876s, Speedup: 4.45x
+_______________________________
+BASELINE (12 threads):
+_______________________________
+Time: 0.245196s
+
+OpenMP (12 threads):
+Time: 0.030417s, Speedup: 8.06x
+_______________________________
+BASELINE (24 threads):
+_______________________________
+Time: 0.245494s
+
+OpenMP (24 threads):
+Time: 0.030910s, Speedup: 7.94x
+
+Matrix size: 1000x1000
+
+Sequential:
+Time: 0.800134s
+
+_______________________________
+BASELINE (1 threads):
+_______________________________
+Time: 0.800411s
+
+OpenMP (1 threads):
+Time: 1.026087s, Speedup: 0.78x
+_______________________________
+BASELINE (3 threads):
+_______________________________
+Time: 0.800814s
+
+OpenMP (3 threads):
+Time: 0.347966s, Speedup: 2.30x
+_______________________________
+BASELINE (6 threads):
+_______________________________
+Time: 0.803434s
+
+OpenMP (6 threads):
+Time: 0.182686s, Speedup: 4.40x
+_______________________________
+BASELINE (12 threads):
+_______________________________
+Time: 0.801558s
+
+OpenMP (12 threads):
+Time: 0.155985s, Speedup: 5.14x
+_______________________________
+BASELINE (24 threads):
+_______________________________
+Time: 0.803509s
+
+OpenMP (24 threads):
+Time: 0.094131s, Speedup: 8.54x
+
+Matrix size: 2000x2000
+
+Sequential:
+Time: 3.275465s
+
+_______________________________
+BASELINE (1 threads):
+_______________________________
+Time: 3.241733s
+
+OpenMP (1 threads):
+Time: 3.967044s, Speedup: 0.82x
+_______________________________
+BASELINE (3 threads):
+_______________________________
+Time: 3.252588s
+
+OpenMP (3 threads):
+Time: 1.393584s, Speedup: 2.33x
+_______________________________
+BASELINE (6 threads):
+_______________________________
+Time: 3.248097s
+
+OpenMP (6 threads):
+Time: 0.746989s, Speedup: 4.35x
+_______________________________
+BASELINE (12 threads):
+_______________________________
+Time: 3.233243s
+
+OpenMP (12 threads):
+Time: 0.469163s, Speedup: 6.89x
+_______________________________
+BASELINE (24 threads):
+_______________________________
+Time: 3.228400s
+
+OpenMP (24 threads):
+Time: 0.450846s, Speedup: 7.16x
+
