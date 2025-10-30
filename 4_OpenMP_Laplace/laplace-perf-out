@@ -1,0 +1,46 @@
+=== Laplace Solver Performance Comparison ===
+Node: aolin-gpu-1.uab.cat
+Date: jue oct 30 12:14:29 CET 2025
+
+Matrix size: 500x500
+
+Sequential:
+Time: 0.244838s
+
+OpenMP (1 threads):
+Time: 0.301017s, Speedup: 0.81x
+OpenMP (2 threads):
+Time: 0.249708s, Speedup: 0.98x
+OpenMP (4 threads):
+Time: 0.263940s, Speedup: 0.93x
+OpenMP (8 threads):
+Time: 0.273968s, Speedup: 0.89x
+
+Matrix size: 1000x1000
+
+Sequential:
+Time: 0.800748s
+
+OpenMP (1 threads):
+Time: 1.025690s, Speedup: 0.78x
+OpenMP (2 threads):
+Time: 0.937668s, Speedup: 0.85x
+OpenMP (4 threads):
+Time: 0.946128s, Speedup: 0.85x
+OpenMP (8 threads):
+Time: 0.961008s, Speedup: 0.83x
+
+Matrix size: 1500x1500
+
+Sequential:
+Time: 1.863926s
+
+OpenMP (1 threads):
+Time: 2.303086s, Speedup: 0.81x
+OpenMP (2 threads):
+Time: 2.084641s, Speedup: 0.89x
+OpenMP (4 threads):
+Time: 2.108986s, Speedup: 0.88x
+OpenMP (8 threads):
+Time: 2.124828s, Speedup: 0.88x
+

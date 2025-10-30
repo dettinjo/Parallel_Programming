@@ -1,0 +1,22 @@
+Arquitectura:                        x86_64
+modo(s) de operación de las CPUs:    32-bit, 64-bit
+Orden de los bytes:                  Little Endian
+CPU(s):                              24
+Lista de la(s) CPU(s) en línea:      0-23
+Hilo(s) de procesamiento por núcleo: 2
+Núcleo(s) por «socket»:              6
+«Socket(s)»                          2
+Modo(s) NUMA:                        1
+ID de fabricante:                    GenuineIntel
+Familia de CPU:                      6
+Modelo:                              44
+Nombre del modelo:                   Intel(R) Xeon(R) CPU           E5645  @ 2.40GHz
+Revisión:                            2
+CPU MHz:                             2393.968
+BogoMIPS:                            4787.93
+Caché L1d:                           32K
+Caché L1i:                           32K
+Caché L2:                            256K
+Caché L3:                            12288K
+CPU(s) del nodo NUMA 0:              0-23
+Indicadores:                         fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf pni pclmulqdq dtes64 monitor ds_cpl smx est tm2 ssse3 cx16 xtpr pdcm pcid dca sse4_1 sse4_2 popcnt aes lahf_lm epb pti ssbd ibrs ibpb stibp dtherm ida arat flush_l1d
