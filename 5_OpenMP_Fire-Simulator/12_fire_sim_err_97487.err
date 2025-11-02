@@ -1,0 +1,48 @@
+--- Loading modules ---
+--- Modules loaded ---
+
+--- Compiling executables ---
+--- Compilation complete ---
+
+Running test: test_files/test1
+  Testing OMP (Improved)...
+Running test: test_files/test2
+  Testing OMP (Improved)...
+Running test: test_files/test3
+  Testing OMP (Improved)...
+Running test: test_files/test4
+  Testing OMP (Improved)...
+--- Running perf stat on SEQUENTIAL (test_files/test4) ---
+
+ Performance counter stats for './05_extinguishing_sequential -f test_files/test4':
+
+      131921200980      cycles:u                  #    2.781 GHz                    
+      247337379741      instructions:u            #    1.87  insn per cycle         
+        1094119415      cache-references:u        #   23.065 M/sec                  
+              6892      cache-misses:u            #    0.001 % of all cache refs    
+          47436.88 msec task-clock:u              #    1.000 CPUs utilized          
+        2866568179      L1-dcache-load-misses:u                                     
+
+      47.445464570 seconds time elapsed
+
+      47.267125000 seconds user
+       0.001992000 seconds sys
+
+
+--- Running perf stat on OMP_Improved (24 Threads) ---
+
+ Performance counter stats for './06_extinguishing_openmp -f test_files/test4':
+
+      648507187844      cycles:u                  #    2.509 GHz                    
+      613618261054      instructions:u            #    0.95  insn per cycle         
+         745768090      cache-references:u        #    2.886 M/sec                  
+         337381991      cache-misses:u            #   45.240 % of all cache refs    
+         258430.14 msec task-clock:u              #   23.971 CPUs utilized          
+        3502673000      L1-dcache-load-misses:u                                     
+
+      10.780828920 seconds time elapsed
+
+     256.839001000 seconds user
+       0.157908000 seconds sys
+
+

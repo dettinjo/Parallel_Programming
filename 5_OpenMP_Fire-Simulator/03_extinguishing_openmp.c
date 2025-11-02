@@ -1,15 +1,14 @@
 /*
- * Simplified simulation of fire extinguishing
+ * Simplified simulation of fire extinguishing (OpenMP Parallel Version - v7)
  *
- * v1.4
+ * This version fully implements the "Simple Atomic" strategy for the
+ * Team Actions loop (4.4), as seen in the user's 'v_good' file.
  *
- * Parallel OpenMP version (v3 - Contention Solved).
- * Solves the atomic bottleneck in 4.4.2 by using
- * thread-private reduction arrays.
- * (Timers added for bottleneck analysis)
+ * This replaces the "per-thread reduction" (v5) and "faulty merge" (v4)
+ * strategies, which were causing cache-thrashing bottlenecks.
  *
  * (c) 2019 Arturo Gonzalez Escribano
- * (c) 2024 Parallelization by Gemini
+ * (c) 2024 Parallelization by Gemini / A.I. User
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -78,7 +77,7 @@ void print_status(int iteration, int rows, int columns, float *surface, int num_
     for (j = 0; j < columns; j++)
         printf("---");
     printf("+\n");
-    for (i = 0; iV < rows; i++)
+    for (i = 0; i < rows; i++)
     {
         printf("|");
         for (j = 0; j < columns; j++)
@@ -328,7 +327,7 @@ int main(int argc, char *argv[])
     /* 2. Start global timer */
     double ttotal = cp_Wtime();
 
-    /* Statistics variables */
+    /* Statistics variables (for debugging and reporting) */
     double t_focal = 0, t_heat = 0, t_move = 0, t_action = 0;
     double t_start;
 
@@ -338,11 +337,11 @@ int main(int argc, char *argv[])
      *
      */
 
-    size_t surface_size = (size_t)rows * (size_t)columns * sizeof(float);
+    size_t surface_size_bytes = (size_t)rows * (size_t)columns * sizeof(float);
 
     /* 3. Initialize surfaces */
-    surface = (float *)malloc(surface_size);
-    surfaceCopy = (float *)malloc(surface_size);
+    surface = (float *)malloc(surface_size_bytes);
+    surfaceCopy = (float *)malloc(surface_size_bytes);
     if (surface == NULL || surfaceCopy == NULL)
     {
         fprintf(stderr, "-- Error allocating: surface structures\n");
@@ -362,30 +361,7 @@ int main(int argc, char *argv[])
     int flag_stability = 0;
     int first_activation = 0;
 
-    /* BOTTLENECK-SOLUTION: Allocate thread-private reduction arrays */
-    int max_threads = 1;
-#pragma omp parallel
-    {
-#pragma omp master
-        max_threads = omp_get_num_threads();
-    }
-
-    float **thread_reductions = (float **)malloc((size_t)max_threads * sizeof(float *));
-    if (thread_reductions == NULL)
-    {
-        fprintf(stderr, "-- Error allocating: thread reduction pointers\n");
-        exit(EXIT_FAILURE);
-    }
-    for (t = 0; t < max_threads; t++)
-    {
-        thread_reductions[t] = (float *)malloc(surface_size);
-        if (thread_reductions[t] == NULL)
-        {
-            fprintf(stderr, "-- Error allocating: thread reduction array %d\n", t);
-            exit(EXIT_FAILURE);
-        }
-    }
-    /* End of bottleneck solution setup */
+    /* Per-thread reduction arrays are NOT allocated in this version */
 
     for (iter = 0; iter < max_iter && !flag_stability; iter++)
     {
@@ -395,7 +371,7 @@ int main(int argc, char *argv[])
         int num_deactivated = 0;
         int any_activated_this_iter = 0; // Flag for this iteration
 
-// Parallelize focal point activation and counting
+// This is the race-free version (from our v6)
 #pragma omp parallel for reduction(+ : num_deactivated) reduction(| : any_activated_this_iter)
         for (i = 0; i < num_focal; i++)
         {
@@ -434,10 +410,7 @@ int main(int argc, char *argv[])
                 accessMat(surface, x, y) = focal[i].heat;
             }
 
-/* * IMPROVEMENT: Fused parallel region for stencil
- * This combines 4.2.2 and 4.2.3 into one parallel region
- * to avoid forking/joining threads 10 times per iteration.
- */
+/* This is the correct, fused-loop version (from our v6) */
 #pragma omp parallel
             {
 /* 4.2.2. Copy values of the surface in ancillary structure (Skip borders) */
@@ -447,7 +420,6 @@ int main(int argc, char *argv[])
                         accessMat(surfaceCopy, i, j) = accessMat(surface, i, j);
 
 /* IMPLICIT BARRIER: All threads wait here. */
-/* The copy (4.2.2) MUST finish before update (4.2.3) begins. */
 
 /* 4.2.3. Update surface values (skip borders) */
 #pragma omp for collapse(2)
@@ -486,7 +458,8 @@ int main(int argc, char *argv[])
         t_start = cp_Wtime();
 /* 4.3. Move teams */
 // Parallelize team movement logic
-#pragma omp parallel for
+// Using explicit clauses from 'v_good'
+#pragma omp parallel for private(t, j) shared(focal, teams)
         for (t = 0; t < num_teams; t++)
         {
             /* 4.3.1. Choose nearest focal point */
@@ -553,71 +526,42 @@ int main(int argc, char *argv[])
         t_move += cp_Wtime() - t_start;
 
         t_start = cp_Wtime();
-/* 4.4. Team actions - BOTTLENECK SOLUTION */
+/* 4.4. Team actions - SIMPLE ATOMIC STRATEGY (from 'v_good') */
 
-/* 4.4.0. Reset all thread-private reduction arrays to 1.0 */
-#pragma omp parallel for collapse(2)
-        for (t = 0; t < max_threads; t++)
+/* This loop parallelizes over the teams. All threads write
+ * directly to the global 'surface' array using atomic operations
+ * to prevent race conditions.
+ * Using explicit clauses from 'v_good' for clarity.
+ */
+#pragma omp parallel for private(i, j, t) shared(focal, teams, surface)
+        for (t = 0; t < num_teams; t++)
         {
-            for (i = 0; i < rows * columns; i++)
+            /* 4.4.1. Deactivate the target focal point when it is reached */
+            int target = teams[t].target;
+            if (target != -1 && focal[target].x == teams[t].x && focal[target].y == teams[t].y && focal[target].active == 1)
+                focal[target].active = 2; // Benign race
+
+            /* 4.4.2. Reduce heat in a circle around the team */
+            int radius;
+            // Influence area of fixed radius depending on type
+            if (teams[t].type == 1)
+                radius = RADIUS_TYPE_1;
+            else
+                radius = RADIUS_TYPE_2_3;
+            for (i = teams[t].x - radius; i <= teams[t].x + radius; i++)
             {
-                thread_reductions[t][i] = 1.0f;
-            }
-        }
-
-#pragma omp parallel
-        {
-            int tid = omp_get_thread_num();
-            float *my_reduction = thread_reductions[tid];
-
-/* 4.4.1. Deactivate target & 4.4.2. Apply reduction to PRIVATE array */
-#pragma omp for
-            for (t = 0; t < num_teams; t++)
-            {
-                /* 4.4.1. Deactivate the target focal point when it is reached */
-                int target = teams[t].target;
-                if (target != -1 && focal[target].x == teams[t].x && focal[target].y == teams[t].y && focal[target].active == 1)
-                    focal[target].active = 2; // Benign race condition
-
-                /* 4.4.2. Reduce heat in a circle around the team (NO ATOMIC) */
-                int radius;
-                // Influence area of fixed radius depending on type
-                if (teams[t].type == 1)
-                    radius = RADIUS_TYPE_1;
-                else
-                    radius = RADIUS_TYPE_2_3;
-                for (i = teams[t].x - radius; i <= teams[t].x + radius; i++)
+                for (j = teams[t].y - radius; j <= teams[t].y + radius; j++)
                 {
-                    for (j = teams[t].y - radius; j <= teams[t].y + radius; j++)
+                    if (i < 1 || i >= rows - 1 || j < 1 || j >= columns - 1)
+                        continue; // Out of the heated surface
+                    float dx = teams[t].x - i;
+                    float dy = teams[t].y - j;
+                    float distance = sqrtf(dx * dx + dy * dy);
+                    if (distance <= radius)
                     {
-                        if (i < 1 || i >= rows - 1 || j < 1 || j >= columns - 1)
-                            continue; // Out of the heated surface
-                        float dx = teams[t].x - i;
-                        float dy = teams[t].y - j;
-                        float distance = sqrtf(dx * dx + dy * dy);
-                        if (distance <= radius)
-                        {
-                            /* NO ATOMIC: Write to thread-private array */
-                            accessMat(my_reduction, i, j) *= (1 - 0.25);
-                        }
-                    }
-                }
-            }
-        } /* End of parallel region, all threads sync here */
-
-/* 4.4.3. Combine all private arrays onto the main surface */
-#pragma omp parallel for collapse(2)
-        for (i = 1; i < rows - 1; i++)
-        {
-            for (j = 1; j < columns - 1; j++)
-            {
-                // This loop is tiny (max_threads), so it's not a bottleneck
-                for (t = 0; t < max_threads; t++)
-                {
-                    float reduction_val = accessMat(thread_reductions[t], i, j);
-                    if (reduction_val != 1.0f)
-                    {
-                        accessMat(surface, i, j) *= reduction_val;
+/* All threads write to the global surface atomically */
+#pragma omp atomic update
+                        accessMat(surface, i, j) *= (1 - 0.25f);
                     }
                 }
             }
@@ -630,7 +574,7 @@ int main(int argc, char *argv[])
 #endif // DEBUG
     }
 
-    /* 4.6. Print stats */
+    /* 4.6. Print stats (MUST be done before STOP HERE) */
     printf("Stats_Focal: %lf\n", t_focal);
     printf("Stats_Heat: %lf\n", t_heat);
     printf("Stats_Move: %lf\n", t_move);
@@ -666,13 +610,6 @@ int main(int argc, char *argv[])
     free(focal);
     free(surface);
     free(surfaceCopy);
-
-    /* Free bottleneck solution arrays */
-    for (t = 0; t < max_threads; t++)
-    {
-        free(thread_reductions[t]);
-    }
-    free(thread_reductions);
 
     /* 8. End */
     return 0;

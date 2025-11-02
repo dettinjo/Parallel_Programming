@@ -13,8 +13,6 @@
 echo "--- Loading modules ---" >&2
 # Load the modern GCC compiler
 module add gcc/12.2.1
-# Load the Python environment
-module add miniconda/3
 echo "--- Modules loaded ---" >&2
 echo "" >&2
 
@@ -30,7 +28,7 @@ echo "" >&2
 
 # 3. DEFINE TEST PARAMETERS
 TEST_FILES=("test_files/test1" "test_files/test2" "test_files/test3" "test_files/test4")
-THREADS=(1 2 4 8 12)
+THREADS=(6 12 24)
 
 # Storage for CSV data
 CSV_SPEEDUP="TestFile,Version,NumThreads,BaselineTime_s,ParallelTime_s,Speedup_x,Efficiency_pc\n"
@@ -130,8 +128,8 @@ echo "==========================================================================
 echo "--- Running perf stat on SEQUENTIAL (test_files/test4) ---" >&2
 perf stat -e cycles,instructions,cache-references,cache-misses,task-clock,L1-dcache-load-misses ./05_extinguishing_sequential -f test_files/test4
 echo ""
-echo "--- Running perf stat on OMP_Improved (12 Threads) ---" >&2
-export OMP_NUM_THREADS=12
+echo "--- Running perf stat on OMP_Improved (24 Threads) ---" >&2
+export OMP_NUM_THREADS=24
 perf stat -e cycles,instructions,cache-references,cache-misses,task-clock,L1-dcache-load-misses ./06_extinguishing_openmp -f test_files/test4
 echo "--- Analysis Complete ---"
 echo ""
@@ -147,27 +145,7 @@ echo -e "$CSV_SPEEDUP" > 07_speedup_data.csv
 echo -e "$CSV_BOTTLENECK" > 08_bottleneck_data.csv
 echo "... saved 07_speedup_data.csv and 08_bottleneck_data.csv"
 echo ""
-echo ""
-
-# 7. INSTALL PYTHON DEPENDENCIES
-echo "====================================================================================="
-echo "               ENSURING PYTHON DEPENDENCIES ARE INSTALLED (pandas)                   "
-echo "====================================================================================="
-# Load the conda environment again (safe practice)
-module add miniconda/3
-# Install pandas non-interactively (-y flag)
-conda install -y pandas
-echo "--- Python environment is ready ---"
-echo ""
-
-# 8. RUN EXTERNAL PYTHON SCRIPT TO GENERATE PLOTS
-echo "====================================================================================="
-echo "                         GENERATING PLOTS WITH PYTHON                              "
-echo "====================================================================================="
-# This will use the python from the 'miniconda/3' module
-python3 04_generate_plots.py
-echo "--- Plot generation finished ---"
-echo ""
+# 7. JOB COMPLETE
 echo "====================================================================================="
 echo "                         SLURM JOB COMPLETE                                          "
 echo "====================================================================================="

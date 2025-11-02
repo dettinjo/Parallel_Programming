@@ -5,9 +5,20 @@ import io
 import numpy as np
 import sys
 
+# --- INCREASE FONT SIZES FOR REPORT ---
+# Set global font sizes for better readability
+plt.rc('font', size=14)          # default text size
+plt.rc('axes', titlesize=18)     # title
+plt.rc('axes', labelsize=14)     # x and y labels
+plt.rc('xtick', labelsize=12)    # x tick labels
+plt.rc('ytick', labelsize=12)    # y tick labels
+plt.rc('legend', fontsize=12)    # legend
+plt.rc('figure', titlesize=18)   # figure title
+# --------------------------------------
+
 # Define file names
-SPEEDUP_FILE = "speedup_data.csv"
-BOTTLENECK_FILE = "bottleneck_data.csv"
+SPEEDUP_FILE = "07_speedup_data.csv"
+BOTTLENECK_FILE = "08_bottleneck_data.csv"
 
 # --- PARSE DATA FROM FILES ---
 try:
@@ -24,10 +35,11 @@ except Exception as e:
 
 
 # --- PLOT 1: SPEEDUP ANALYSIS ---
-print("Generating speedup_analysis.png...")
+print("Generating 09_speedup_analysis.png...")
 
 try:
-    plt.figure(figsize=(10, 6))
+    # Increased figure size slightly for better spacing with larger fonts
+    plt.figure(figsize=(11, 7))
 
     # Filter out the 'test1' data as it's an overhead case
     plot_data = speedup_df[
@@ -43,33 +55,35 @@ try:
         file_data = plot_data[plot_data['TestFile'] == test_file]
         # Clean up label
         label = test_file.replace('test_files/', 'Test Case ')
-        plt.plot(file_data['NumThreads'], file_data['Speedup_x'], marker='o', label=label)
+        # Increase line width and marker size for visibility
+        plt.plot(file_data['NumThreads'], file_data['Speedup_x'], marker='o', label=label, markersize=8, linewidth=2.5)
 
     # Plot perfect scaling line
-    if threads: # Only plot if 'threads' list is not empty
-        plt.plot(threads, threads, 'k--', label='Perfect Scaling (y=x)')
+    if threads: 
+        plt.plot(threads, threads, 'k--', label='Perfect Scaling (y=x)', linewidth=2.5)
 
     plt.title('Parallel Speedup vs. Number of Threads (Relative to Sequential Baseline)')
     plt.xlabel('Number of Threads')
     plt.ylabel('Speedup (x)')
-    if threads: # Only set xticks if 'threads' list is not empty
+    if threads: 
         plt.xticks(threads)
     plt.legend()
     plt.grid(True, linestyle=':')
-    plt.savefig('speedup_analysis.png')
+    plt.tight_layout() # Adjust layout
+    plt.savefig('09_speedup_analysis.png')
     plt.close()
     
-    print("... saved speedup_analysis.png")
+    print("... saved 09_speedup_analysis.png")
 
 except Exception as e:
     print(f"Error generating speedup plot: {e}", file=sys.stderr)
 
 
 # --- PLOT 2: BOTTLENECK ANALYSIS ---
-print("Generating bottleneck_analysis.png...")
+print("Generating 10_bottleneck_analysis.png...")
 
 try:
-    plt.figure(figsize=(12, 7))
+    plt.figure(figsize=(12, 8)) # Increased figure size
 
     # Filter to get just the interesting comparisons
     seq_data = bottleneck_df[
@@ -77,9 +91,12 @@ try:
         (bottleneck_df['TestFile'].isin(['test_files/test2', 'test_files/test4']))
     ]
 
+    # Get the OMP data for the *highest thread count* tested
+    max_threads = bottleneck_df[bottleneck_df['Version'] == 'OMP_Improved']['NumThreads'].max()
+    
     omp_data = bottleneck_df[
         (bottleneck_df['Version'] == 'OMP_Improved') &
-        (bottleneck_df['NumThreads'] == 12) &
+        (bottleneck_df['NumThreads'] == max_threads) &
         (bottleneck_df['TestFile'].isin(['test_files/test2', 'test_files/test4']))
     ]
 
@@ -95,9 +112,9 @@ try:
         # Create labels for the x-axis
         labels = [
             'Test 2\n(Sequential)',
-            'Test 2\n(OMP @ 12 Threads)',
+            f'Test 2\n(OMP @ {max_threads} Threads)',
             'Test 4\n(Sequential)',
-            'Test 4\n(OMP @ 12 Threads)'
+            f'Test 4\n(OMP @ {max_threads} Threads)'
         ]
 
         # Get data for stacking
@@ -113,22 +130,23 @@ try:
         p3 = plt.bar(labels, move_times, width, bottom=focal_times + heat_times, label='Move')
         p4 = plt.bar(labels, action_times, width, bottom=focal_times + heat_times + move_times, label='Action')
 
-        plt.title('Bottleneck Analysis: Time per Section (Sequential vs. OMP @ 12 Threads)')
+        plt.title(f'Bottleneck Analysis: Time per Section (Sequential vs. OMP @ {max_threads} Threads)')
         plt.ylabel('Total Time (s)')
         plt.legend(loc='upper left')
 
         # Add total time labels on top of the bars
         totals = focal_times + heat_times + move_times + action_times
         for i, total in enumerate(totals):
-            plt.text(i, total + 1, f'{total:.1f}s', ha='center', fontweight='bold')
+            # --- UPDATED: Added fontsize=12 ---
+            plt.text(i, total + 1, f'{total:.1f}s', ha='center', fontweight='bold', fontsize=12)
 
         plt.tight_layout()
-        plt.savefig('bottleneck_analysis.png')
+        plt.savefig('10_bottleneck_analysis.png')
         plt.close()
         
-        print("... saved bottleneck_analysis.png")
+        print("... saved 10_bottleneck_analysis.png")
     else:
-        print("... skipping bottleneck_analysis.png (no data to plot).")
+        print("... skipping 10_bottleneck_analysis.png (no data to plot).")
 
 except Exception as e:
     print(f"Error generating bottleneck plot: {e}", file=sys.stderr)

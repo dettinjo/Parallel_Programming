@@ -1,0 +1,17 @@
+=====================================================================================
+                         JOB: GENERATE PLOTS ONLY                                  
+=====================================================================================
+
+
+
+Generating 09_speedup_analysis.png...
+... saved 09_speedup_analysis.png
+Generating 10_bottleneck_analysis.png...
+... saved 10_bottleneck_analysis.png
+
+Plot generation complete.
+Generated 09_speedup_analysis.png and 10_bottleneck_analysis.png
+
+=====================================================================================
+                         SLURM JOB COMPLETE                                          
+=====================================================================================
