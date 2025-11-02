@@ -1,13 +1,3 @@
-/*
- * Simplified simulation of fire extinguishing
- *
- * v1.4
- *
- * Sequential reference code.
- * (Timers added for bottleneck analysis)
- *
- * (c) 2019 Arturo Gonzalez Escribano
- */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
