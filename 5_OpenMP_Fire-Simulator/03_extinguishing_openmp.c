@@ -1,15 +1,3 @@
-/*
- * Simplified simulation of fire extinguishing (OpenMP Parallel Version - v7)
- *
- * This version fully implements the "Simple Atomic" strategy for the
- * Team Actions loop (4.4), as seen in the user's 'v_good' file.
- *
- * This replaces the "per-thread reduction" (v5) and "faulty merge" (v4)
- * strategies, which were causing cache-thrashing bottlenecks.
- *
- * (c) 2019 Arturo Gonzalez Escribano
- * (c) 2024 Parallelization by Gemini / A.I. User
- */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

@@ -56,20 +56,30 @@ try:
         # Clean up label
         label = test_file.replace('test_files/', 'Test Case ')
         # Increase line width and marker size for visibility
+        
+        # --- REVERTED: Plotting Speedup_x ---
         plt.plot(file_data['NumThreads'], file_data['Speedup_x'], marker='o', label=label, markersize=8, linewidth=2.5)
 
-    # Plot perfect scaling line
-    if threads: 
-        plt.plot(threads, threads, 'k--', label='Perfect Scaling (y=x)', linewidth=2.5)
+    # --- MODIFICATION: Removed perfect scaling line ---
+    # if threads: 
+    #     plt.plot(threads, threads, 'k--', label='Perfect Scaling (y=x)', linewidth=2.5)
 
+    # --- REVERTED: Updated Title and Y-Label ---
     plt.title('Parallel Speedup vs. Number of Threads (Relative to Sequential Baseline)')
     plt.xlabel('Number of Threads')
     plt.ylabel('Speedup (x)')
+    
+    # --- MODIFICATION: Set custom Y-axis scale to show differences better ---
+    # Based on your data (min 1.78x, max 4.38x), this zooms in.
+    plt.ylim(1.5, 4.5) 
+    
     if threads: 
         plt.xticks(threads)
     plt.legend()
     plt.grid(True, linestyle=':')
     plt.tight_layout() # Adjust layout
+    
+    # --- REVERTED: Changed save file name ---
     plt.savefig('09_speedup_analysis.png')
     plt.close()
     
@@ -80,6 +90,7 @@ except Exception as e:
 
 
 # --- PLOT 2: BOTTLENECK ANALYSIS ---
+# (This plot remains unchanged)
 print("Generating 10_bottleneck_analysis.png...")
 
 try:
@@ -137,7 +148,7 @@ try:
         # Add total time labels on top of the bars
         totals = focal_times + heat_times + move_times + action_times
         for i, total in enumerate(totals):
-            # --- UPDATED: Added fontsize=12 ---
+            # --- Added fontsize=12 ---
             plt.text(i, total + 1, f'{total:.1f}s', ha='center', fontweight='bold', fontsize=12)
 
         plt.tight_layout()
