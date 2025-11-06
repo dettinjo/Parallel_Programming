@@ -1,0 +1,85 @@
+#!/bin/bash
+
+# --- SLURM Configuration (Aolin 2-Node Cluster) ---
+#SBATCH --job-name=laplace_experiment
+#SBATCH --output=../results/laplace_run_aolin_%j.log
+#SBATCH --error=../results/laplace_run_aolin_%j.err
+#SBATCH --partition=cuda-int.q    
+#SBATCH --nodes=2                      
+#SBATCH --ntasks-per-node=8
+#SBATCH --time=00:30:00                
+
+# --- Dynamic Path Setup ---
+PROJECT_ROOT=$( cd -- "${SLURM_SUBMIT_DIR}/../" &> /dev/null && pwd )
+
+# --- File Structure Paths ---
+SRC_DIR="${PROJECT_ROOT}/src"
+RESULTS_DIR="${PROJECT_ROOT}/results"
+
+SRC_SEQ="${SRC_DIR}/laplace_seq.c"
+SRC_MPI="${SRC_DIR}/laplace_mpi.c"
+
+BIN_SEQ="${PROJECT_ROOT}/laplace_seq_bin"
+BIN_MPI="${PROJECT_ROOT}/laplace_mpi_bin"
+
+LOG_FILE="${RESULTS_DIR}/laplace_run_aolin_${SLURM_JOB_ID}.log"
+CSV_FILE="${RESULTS_DIR}/laplace_timings_aolin_${SLURM_JOB_ID}.csv"
+
+# --- Experiment Configuration ---
+SIZES="512 1024 2048 4096"
+
+#
+# --- FIX: Update list to scale up to 16 processes (2 nodes * 8 cores) ---
+#
+PROCESSES="2 4 8 12 16"
+
+# --- Setup ---
+mkdir -p "${RESULTS_DIR}"
+
+echo "--- SLURM JOB ${SLURM_JOB_ID} ---" | tee -a "${LOG_FILE}"
+echo "PROJECT_ROOT: ${PROJECT_ROOT}" | tee -a "${LOG_FILE}"
+echo "Running on 2-node [cuda-int.q] (Aolin) - Using 8 cores/node" | tee -a "${LOG_FILE}"
+echo "Nodes: ${SLURM_JOB_NODELIST}" | tee -a "${LOG_FILE}"
+
+# --- Load Modules ---
+echo "Loading modules..." | tee -a "${LOG_FILE}"
+module load gcc/12.2.1
+module load openmpi/4.1.1
+echo "Modules loaded." | tee -a "${LOG_FILE}"
+
+# --- Compilation ---
+echo "--- Compiling Codes ---" | tee -a "${LOG_FILE}"
+mpicc -O2 -lm "${SRC_SEQ}" -o "${BIN_SEQ}"
+if [ $? -ne 0 ]; then echo "Sequential compilation FAILED." | tee -a "${LOG_FILE}"; exit 1; fi
+
+mpicc -O2 -lm "${SRC_MPI}" -o "${BIN_MPI}"
+if [ $? -ne 0 ]; then echo "MPI compilation FAILED." | tee -a "${LOG_FILE}"; exit 1; fi
+echo "Compilation successful." | tee -a "${LOG_FILE}"
+
+# --- Initialize CSV ---
+echo "type,matrix_size,processes,nodes,time_seconds,speedup" > "${CSV_FILE}"
+
+# --- Run Experiments ---
+echo "" | tee -a "${LOG_FILE}"
+echo "--- Running Experiments & Generating Report ---" | tee -a "${LOG_FILE}"
+
+for size in ${SIZES}; do
+    echo "" | tee -a "${LOG_FILE}"
+    echo "==================================================================================" | tee -a "${LOG_FILE}"
+    echo "  Benchmark for Matrix Size: ${size}x${size}" | tee -a "${LOG_FILE}"
+    echo "==================================================================================" | tee -a "${LOG_FILE}"
+
+    # 1. Get Sequential Baseline
+    echo "Running sequential baseline..." | tee -a "${LOG_FILE}"
+    SEQ_TIME=$(mpirun -np 1 "${BIN_SEQ}" ${size} | head -n 1)
+    echo "Sequential Time: ${SEQ_TIME} s" | tee -a "${LOG_FILE}"
+    echo "" | tee -a "${LOG_FILE}"
+
+    # 2. Print Table Header
+    printf "%-15s %-10s %-10s %-15s %-15s %-10s\n" \
+      "Matrix Size" "Processes" "Nodes" "Seq Time (s)" "Par Time (s)" "Speedup" | tee -a "${LOG_FILE}"
+    printf "%-15s %-10s %-10s %-15s %-15s %-10s\n" \
+      "---------------" "----------" "----------" "---------------" "---------------" "----------" | tee -a "${LOG_FILE}"
+
+    # 3. Print Baseline Row
+    printf "%-15s %-10s %-10s %

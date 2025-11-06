@@ -1,0 +1,107 @@
+#!/bin/bash
+
+# --- SLURM Configuration (Aolin 1-Node Xeon) ---
+#SBATCH --job-name=laplace_test
+#SBATCH --output=../results/laplace_test_aolin_%j.log
+#SBATCH --error=../results/laplace_test_aolin_%j.err
+#SBATCH --partition=xeon.q           
+#SBATCH --nodes=1                   
+#SBATCH --ntasks-per-node=8         
+#SBATCH --time=00:10:00              
+
+# --- Dynamic Path Setup ---
+PROJECT_ROOT=$( cd -- "${SLURM_SUBMIT_DIR}/../" &> /dev/null && pwd )
+
+# --- File Structure Paths ---
+SRC_DIR="${PROJECT_ROOT}/src"
+RESULTS_DIR="${PROJECT_ROOT}/results"
+
+SRC_SEQ="${SRC_DIR}/laplace_seq.c"
+SRC_MPI="${SRC_DIR}/laplace_mpi.c"
+
+BIN_SEQ="${PROJECT_ROOT}/laplace_seq_bin"
+BIN_MPI="${PROJECT_ROOT}/laplace_mpi_bin"
+
+CSV_FILE="${RESULTS_DIR}/laplace_test_timings_aolin_${SLURM_JOB_ID}.csv"
+
+# --- Experiment Configuration ---
+SIZES="512 1024"
+PROCESSES="2 4 8" # Scales up to the max 8 cores
+
+# --- Setup ---
+mkdir -p "${RESULTS_DIR}"
+
+echo "--- SLURM JOB ${SLURM_JOB_ID} (TEST) ---"
+echo "PROJECT_ROOT: ${PROJECT_ROOT}"
+echo "Running on 1-node [xeon.q] (8-core node)"
+echo "Node: ${SLURM_JOB_NODELIST}"
+
+# --- Load Modules ---
+echo "Loading modules..."
+module load gcc/12.2.1
+module load openmpi/4.1.1
+echo "Modules loaded."
+
+# --- Compilation ---
+echo "--- Compiling Codes ---"
+mpicc -O2 -lm "${SRC_SEQ}" -o "${BIN_SEQ}"
+if [ $? -ne 0 ]; then echo "Sequential compilation FAILED."; exit 1; fi
+
+mpicc -O2 -lm "${SRC_MPI}" -o "${BIN_MPI}"
+if [ $? -ne 0 ]; then echo "MPI compilation FAILED."; exit 1; fi
+echo "Compilation successful."
+
+# --- Initialize CSV ---
+echo "type,matrix_size,processes,nodes,time_seconds,speedup" > "${CSV_FILE}"
+
+# --- Run Experiments ---
+echo ""
+echo "--- Running TEST Experiments ---"
+
+for size in ${SIZES}; do
+    echo ""
+    echo "=================================================================================="
+    echo "  Benchmark for Matrix Size: ${size}x${size}"
+    echo "=================================================================================="
+
+    # 1. Get Sequential Baseline
+    echo "Running sequential baseline..."
+    SEQ_TIME=$(mpirun -np 1 "${BIN_SEQ}" ${size} | head -n 1)
+    echo "Sequential Time: ${SEQ_TIME} s"
+    echo ""
+
+    # 2. Print Table Header
+    printf "%-15s %-10s %-10s %-15s %-15s %-10s\n" \
+      "Matrix Size" "Processes" "Nodes" "Seq Time (s)" "Par Time (s)" "Speedup"
+    printf "%-15s %-10s %-10s %-15s %-15s %-10s\n" \
+      "---------------" "----------" "----------" "---------------" "---------------" "----------"
+
+    # 3. Print Baseline Row
+    printf "%-15s %-10s %-10s %-15s %-15s %-10s\n" \
+      "${size}x${size}" "1" "1" "${SEQ_TIME}" "---" "1.00"
+    echo "sequential,${size},1,1,${SEQ_TIME},1.00" >> "${CSV_FILE}"
+
+    # 4. Loop through Parallel Runs
+    for procs in ${PROCESSES}; do
+        NODES_USED=1
+        
+        MPI_TIME=$(mpirun -np ${procs} "${BIN_MPI}" ${size} | head -n 1)
+        
+        if [[ -n "$MPI_TIME" && $(echo "$MPI_TIME > 0" | bc -l) -eq 1 ]]; then
+            SPEEDUP=$(awk "BEGIN {printf \"%.2f\", $SEQ_TIME / $MPI_TIME}")
+        else
+            MPI_TIME="Error"
+            SPEEDUP="Error"
+        fi
+
+        printf "%-15s %-10s %-10s %-15s %-15s %-10s\n" \
+          "${size}x${size}" "${procs}" "${NODES_USED}" "${SEQ_TIME}" "${MPI_TIME}" "${SPEEDUP}"
+        echo "mpi,${size},${procs},${NODES_USED},${MPI_TIME},${SPEEDUP}" >> "${CSV_FILE}"
+    done
+done
+
+# --- Cleanup ---
+echo ""
+rm -f "${BIN_SEQ}" "${BIN_MPI}"
+echo "--- TEST Complete ---"
+echo "End time: $(date)"
