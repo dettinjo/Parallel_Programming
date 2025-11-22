@@ -1,0 +1,37 @@
+--- SLURM JOB 70285 (TEST) ---
+PROJECT_ROOT: /home/master/ppm/ppm-43/Parallel Programming/07_MPI_Fire_Simulator
+Running on 1-node [test.q] (4-core test)
+Node: clus-login
+Loading modules...
+Modules loaded.
+--- Compiling Codes ---
+Compilation successful.
+
+--- Running TEST Experiments ---
+
+==================================================================================
+  Benchmark for Test Case: test1
+==================================================================================
+Running sequential baseline...
+Sequential Time: 0.002590 s
+
+Test Case       Processes  Nodes      Seq Time (s)    Par Time (s)    Speedup   
+--------------- ---------- ---------- --------------- --------------- ----------
+test1           1          1          0.002590        ---             1.00      
+test1           2          1          0.002590        0.002531        1.02      
+test1           4          1          0.002590        Error           Error     
+
+==================================================================================
+  Benchmark for Test Case: test3
+==================================================================================
+Running sequential baseline...
+Sequential Time: 70.173139 s
+
+Test Case       Processes  Nodes      Seq Time (s)    Par Time (s)    Speedup   
+--------------- ---------- ---------- --------------- --------------- ----------
+test3           1          1          70.173139       ---             1.00      
+test3           2          1          70.173139       40.367308       1.74      
+test3           4          1          70.173139       22.284385       3.15      
+
+--- TEST Complete ---
+End time: Thu Nov 13 21:40:09 CET 2025

@@ -1,0 +1,7 @@
+type,test_case,processes,nodes,time_seconds,speedup
+sequential,test1,1,1,0.002590,1.00
+mpi,test1,2,1,0.002531,1.02
+mpi,test1,4,1,Error,Error
+sequential,test3,1,1,70.173139,1.00
+mpi,test3,2,1,40.367308,1.74
+mpi,test3,4,1,22.284385,3.15

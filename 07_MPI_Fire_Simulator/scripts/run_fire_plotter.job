@@ -1,0 +1,37 @@
+#!/bin/bash
+
+# --- SLURM Configuration (for clus-login node) ---
+#SBATCH --job-name=fire_plotter
+#SBATCH --output=../results/fire_plotter_%j.out
+#SBATCH --error=../results/fire_plotter_%j.err
+#SBATCH --partition=test.q
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --time=00:05:00  # 5 minutes is plenty of time
+
+# --- Dynamic Path Setup ---
+PROJECT_ROOT=$( cd -- "${SLURM_SUBMIT_DIR}/../" &> /dev/null && pwd )
+# Point to the fire Python script
+SCRIPT_TO_RUN="${SLURM_SUBMIT_DIR}/plot_fire_results.py"
+
+echo "--- SLURM JOB ${SLURM_JOB_ID} ---"
+echo "Job: Running Python plotter script"
+echo "Project Root: ${PROJECT_ROOT}"
+echo "Script Path: ${SCRIPT_TO_RUN}"
+
+# --- Load Modules ---
+echo "Loading modules..."
+module load gcc/12.2.1
+module load miniconda/3
+echo "Modules loaded."
+
+# --- Install required Python packages ---
+echo "Installing Python packages..."
+pip install pandas matplotlib
+echo "Packages installed."
+
+# --- Run the Python Script ---
+echo "Running python3 ${SCRIPT_TO_RUN}..."
+python3 "${SCRIPT_TO_RUN}"
+
+echo "--- Plotting Complete ---"
