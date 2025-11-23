@@ -27,7 +27,6 @@ CSV_FILE="${RESULTS_DIR}/fire_timings_clus_${SLURM_JOB_ID}.csv"
 
 # --- Experiment Configuration ---
 TEST_CASES="test1 test2 test3 test4" 
-PROCESSES="2 4 8 12 18 24 36 48 72 96 120"
 
 # --- Setup ---
 mkdir -p "${RESULTS_DIR}"
@@ -71,9 +70,38 @@ for test_case in ${TEST_CASES}; do
     echo "  Benchmark for Test Case: ${test_case}"
     echo "=================================================================================="
 
+    # --- OPTIMIZED PROCESS SELECTION ---
+    # Selects valid process counts (divisors of row count) to avoid crashes.
+    case "${test_case}" in
+        "test1")
+            # Rows: 30. Divisors: 2, 3, 5, 6, 10, 15, 30.
+            # We select a spread that fits the hardware.
+            PROCESSES="2 6 10 30"
+            ;;
+        "test2")
+            # Rows: 8000. 
+            # Valid up to 120: 2, 4, 8, 16, 20, 32, 40, 50, 64, 80, 100.
+            # (120 is NOT a divisor of 8000, so we stop at 100).
+            PROCESSES="2 4 8 16 20 32 40 50 64 80 100"
+            ;;
+        "test3")
+            # Rows: 512. Power of 2.
+            # Valid: 2, 4, 8, 16, 32, 64, 128(too high).
+            PROCESSES="2 4 8 16 32 64"
+            ;;
+        "test4")
+            # Rows: 500. 
+            # Valid: 2, 4, 5, 10, 20, 25, 50, 100.
+            PROCESSES="2 4 10 20 50 100"
+            ;;
+        *)
+            # Default fallback if new tests are added
+            PROCESSES="2 4 8 12"
+            ;;
+    esac
+
     # 1. Get Sequential Baseline
     echo "Running sequential baseline..."
-    # --- FIX: Added | head -n 1 to capture only one line ---
     SEQ_TIME=$(mpirun -np 1 "${BIN_SEQ}" -f "${TEST_FILE}" | grep "Time:" | awk '{print $2}' | head -n 1)
     echo "Sequential Time: ${SEQ_TIME} s"
     echo ""
@@ -94,7 +122,6 @@ for test_case in ${TEST_CASES}; do
         TASKS_PER_NODE=${SLURM_NTASKS_PER_NODE:-12}
         NODES_USED=$(( (${procs} + ${TASKS_PER_NODE} - 1) / ${TASKS_PER_NODE} ))
         
-        # --- FIX: Added | head -n 1 to capture only one line ---
         MPI_TIME=$(mpirun -np ${procs} "${BIN_MPI}" -f "${TEST_FILE}" | grep "Time:" | awk '{print $2}' | head -n 1)
         
         if [[ -n "$MPI_TIME" && $(echo "$MPI_TIME > 0" | bc -l) -eq 1 ]]; then

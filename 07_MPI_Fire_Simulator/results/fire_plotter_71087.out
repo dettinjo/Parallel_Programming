@@ -1,0 +1,21 @@
+--- SLURM JOB 71087 ---
+Job: Running Python plotter script
+Project Root: /home/master/ppm/ppm-43/Parallel Programming/07_MPI_Fire_Simulator
+Script Path: /home/master/ppm/ppm-43/Parallel Programming/07_MPI_Fire_Simulator/scripts/plot_fire_results.py
+Loading modules...
+Modules loaded.
+Checking Python dependencies...
+Dependencies ready.
+Running python3 /home/master/ppm/ppm-43/Parallel Programming/07_MPI_Fire_Simulator/scripts/plot_fire_results.py...
+
+--- Generating Single Run Plot ---
+Latest file found: fire_timings_clus_70921_2d.csv
+Saved single run plot: fire_speedup_clus_70921_2d.png
+
+--- Generating Strategy Comparison Plot ---
+Added Basic 1D from fire_timings_clus_70908_1d.csv
+Added Optimized 1D from fire_timings_clus_70911_1d_opt.csv
+Added 2D Decomposition from fire_timings_clus_70921_2d.csv
+Saved comparison plot: fire_strategy_comparison.png
+--- Plotting Complete ---
+Check the /results directory for .png files.
