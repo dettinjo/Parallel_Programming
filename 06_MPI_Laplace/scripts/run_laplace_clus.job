@@ -6,6 +6,8 @@
 #SBATCH --error=../results/laplace_run_clus_%j.err
 #SBATCH --partition=nodo.q
 #SBATCH --nodes=10
+#SBATCH --mail-type=END,FAIL
+#SBATCH --mail-user=1733432@uab.cat
 #SBATCH --ntasks-per-node=12
 #SBATCH --time=00:30:00
 
@@ -26,7 +28,7 @@ BIN_MPI="${PROJECT_ROOT}/laplace_mpi_bin"
 CSV_FILE="${RESULTS_DIR}/laplace_timings_clus_${SLURM_JOB_ID}.csv"
 
 # --- Experiment Configuration ---
-SIZES="512 1024 2048 4096"
+SIZES="1024 2048 4096 8192 16384 32768 65536"
 PROCESSES="2 4 8 12 18 24 36 48 72 96 120"
 
 # --- Setup ---

@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 import os
 import sys
@@ -19,6 +20,7 @@ try:
         sys.exit(1)
 
     # Find the newest file
+    overide_csv_path = '/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/06_MPI_Laplace/results/laplace_timings_clus_72049.csv'
     latest_csv_path = max(csv_files, key=os.path.getctime)
     print(f"Loading latest data from: {latest_csv_path}")
 
@@ -56,17 +58,22 @@ max_processes = df['processes'].max()
 ax.plot([1, max_processes], [1, max_processes], 'k--', label='Ideal Speedup')
 
 # --- 5. Loop and Plot Data for Each Matrix Size ---
-for size in matrix_sizes:
+colors_matrix = plt.cm.plasma(np.linspace(0, 1, len(matrix_sizes)))
+for i, size in enumerate(matrix_sizes):
     df_size = df[df['matrix_size'] == size]
     mpi_data = df_size[df_size['type'] == 'mpi'].sort_values(by='processes')
     seq_data = df_size[df_size['type'] == 'sequential']
 
     if not mpi_data.empty:
-        ax.plot(mpi_data['processes'], mpi_data['speedup'], 
-                label=f'Size: {size}x{size}', marker='o', linestyle='-')
+        ax.plot(mpi_data['processes'], 
+                mpi_data['speedup'], 
+                label=f'Size: {size}x{size}', 
+                marker='o',
+                color=colors_matrix[i],
+                linestyle='-')
     
-    if not seq_data.empty:
-        ax.plot(seq_data['processes'], seq_data['speedup'], marker='o', markersize=8)
+    # if not seq_data.empty:
+    #     ax.plot(seq_data['processes'], seq_data['speedup'], marker='o', markersize=8)
 
 # --- 6. Format the Plot ---
 # Get the Job ID from the filename for the title
