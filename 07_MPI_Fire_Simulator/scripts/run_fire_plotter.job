@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# --- SLURM Configuration (for clus-login node) ---
+#SBATCH --job-name=fire_plotter
+#SBATCH --output=../results/fire_plotter_%j.out
+#SBATCH --error=../results/fire_plotter_%j.err
+#SBATCH --partition=test.q
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --time=00:05:00
+
+# --- Dynamic Path Setup ---
+# Gets the absolute path to the project root (assuming script is in /scripts)
+PROJECT_ROOT=$( cd -- "${SLURM_SUBMIT_DIR}/../" &> /dev/null && pwd )
+SCRIPT_TO_RUN="${PROJECT_ROOT}/scripts/plot_fire_results.py"
+
+echo "--- SLURM JOB ${SLURM_JOB_ID} ---"
+echo "Job: Running Python plotter script"
+echo "Project Root: ${PROJECT_ROOT}"
+echo "Script Path: ${SCRIPT_TO_RUN}"
+
+# --- Load Modules ---
+echo "Loading modules..."
+module load gcc/12.2.1
+module load miniconda/3
+echo "Modules loaded."
+
+# --- Install packages ---
+# (Safe to run every time; pip skips if satisfied)
+echo "Checking Python dependencies..."
+pip install pandas matplotlib --user -q
+echo "Dependencies ready."
+
+# --- Run the Python Script ---
+echo "Running python3 ${SCRIPT_TO_RUN}..."
+python3 "${SCRIPT_TO_RUN}"
+
+echo "--- Plotting Complete ---"
+echo "Check the /results directory for .png files."

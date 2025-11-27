@@ -252,70 +252,51 @@ int main(int argc, char *argv[]) {
  */
 
     /* 3. Initialize surfaces */
+    /* MPI: Macro for accessing the *local* surface buffers */
+    #define accessLocalMat( arr, exp1, exp2 )    arr[ (exp1) * columns + (exp2) ]
+
+    /* MPI: Local surface data setup (Dynamic remainder handling included) */
+    int base_rows = rows / nprocs;
+    int remainder = rows % nprocs;
     
-    /* MPI: 2D DECOMPOSITION SETUP */
-    int dims[2] = {0, 0};
-    MPI_Dims_create(nprocs, 2, dims);
-    int P_row = dims[0];
-    int P_col = dims[1];
-    
-    /* Determine my position in the process grid */
-    int my_grid_row = rank / P_col;
-    int my_grid_col = rank % P_col;
-    
-    /* Neighbors (Non-Periodic) */
-    int up    = (my_grid_row == 0)       ? MPI_PROC_NULL : rank - P_col;
-    int down  = (my_grid_row == P_row-1) ? MPI_PROC_NULL : rank + P_col;
-    int left  = (my_grid_col == 0)       ? MPI_PROC_NULL : rank - 1;
-    int right = (my_grid_col == P_col-1) ? MPI_PROC_NULL : rank + 1;
+    int local_rows = (rank < remainder) ? base_rows + 1 : base_rows;
 
-    /* Calculate Local Dimensions with Remainders */
-    int base_r = rows / P_row;
-    int rem_r  = rows % P_row;
-    int local_rows = (my_grid_row < rem_r) ? base_r + 1 : base_r;
-    int global_r_off;
-    if (my_grid_row < rem_r) global_r_off = my_grid_row * (base_r + 1);
-    else global_r_off = rem_r * (base_r + 1) + (my_grid_row - rem_r) * base_r;
+    int first_row;
+    if (rank < remainder) {
+        first_row = rank * (base_rows + 1);
+    } else {
+        first_row = remainder * (base_rows + 1) + (rank - remainder) * base_rows;
+    }
+    int last_row = first_row + local_rows - 1;
 
-    int base_c = columns / P_col;
-    int rem_c  = columns % P_col;
-    int local_cols = (my_grid_col < rem_c) ? base_c + 1 : base_c;
-    int global_c_off;
-    if (my_grid_col < rem_c) global_c_off = my_grid_col * (base_c + 1);
-    else global_c_off = rem_c * (base_c + 1) + (my_grid_col - rem_c) * base_c;
+    int local_alloc_rows = local_rows + 2; // +2 for Ghost Rows
 
-    /* Allocation: Include Halo on all 4 sides */
-    int alloc_rows = local_rows + 2;
-    int alloc_cols = local_cols + 2;
-    
-    /* Macro for Local Access: (row, col) including ghost cells */
-    #define L(r, c) local_surface[ (r) * alloc_cols + (c) ]
-    #define LC(r, c) local_surfaceCopy[ (r) * alloc_cols + (c) ]
+    /* MPI: Pointers for local surfaces */
+    float *local_surface, *local_surfaceCopy;
 
-    float *local_surface = (float*)malloc(sizeof(float) * alloc_rows * alloc_cols);
-    float *local_surfaceCopy = (float*)malloc(sizeof(float) * alloc_rows * alloc_cols);
+    /* MPI: Allocate local surfaces */
+    local_surface = (float *)malloc( sizeof(float) * (size_t)local_alloc_rows * (size_t)columns );
+    local_surfaceCopy = (float *)malloc( sizeof(float) * (size_t)local_alloc_rows * (size_t)columns );
 
-    /* * OPTIMIZATION 4: Manual Packing Buffers 
-     * Contiguous buffers for Left/Right column exchange
-     */
-    float *send_left_buf  = (float*)malloc(sizeof(float) * local_rows);
-    float *send_right_buf = (float*)malloc(sizeof(float) * local_rows);
-    float *recv_left_buf  = (float*)malloc(sizeof(float) * local_rows);
-    float *recv_right_buf = (float*)malloc(sizeof(float) * local_rows);
-
-    if (!local_surface || !local_surfaceCopy) MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
-
-    /* Rank 0 Global Alloc */
+    /* MPI: Rank 0 Allocates global surface */
     if (rank == 0) {
         surface = (float *)malloc( sizeof(float) * (size_t)rows * (size_t)columns );
-        if (!surface) MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+        if ( surface == NULL ) {
+            fprintf(stderr,"-- Error allocating global surface for gather\n");
+            MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+        }
     } else {
-        surface = NULL;
+        surface = NULL; 
     }
-    surfaceCopy = NULL;
+    surfaceCopy = NULL; 
 
-    /* Initialize Local (0.0) */
-    for(i=0; i<alloc_rows*alloc_cols; i++) {
+    if ( local_surface == NULL || local_surfaceCopy == NULL ) {
+        fprintf(stderr,"-- Error allocating: local surface structures on rank %d\n", rank);
+        MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+    }
+    
+    /* MPI: Initialization */
+    for( i=0; i<local_alloc_rows * columns; i++ ) {
         local_surface[i] = 0.0f;
         local_surfaceCopy[i] = 0.0f;
     }
@@ -324,9 +305,12 @@ int main(int argc, char *argv[]) {
     int iter;
     int flag_stability = 0;
     int first_activation = 0;
-    
-    /* Async Request Handles */
-    MPI_Request reqs[8];
+
+    /* MPI: Setup for Async Comm */
+    MPI_Request requests[4];
+    MPI_Status statuses[4];
+    int up_neighbor = (rank == 0) ? MPI_PROC_NULL : rank - 1;
+    int down_neighbor = (rank == nprocs - 1) ? MPI_PROC_NULL : rank + 1;
 
     for( iter=0; iter<max_iter && ! flag_stability; iter++ ) {
 
@@ -349,89 +333,85 @@ int main(int argc, char *argv[]) {
             /* 4.2.1. Update heat on active focal points */
             for( i=0; i<num_focal; i++ ) {
                 if ( focal[i].active != 1 ) continue;
-                int gx = focal[i].x;
-                int gy = focal[i].y;
-                if ( gx < 0 || gx >= rows || gy < 0 || gy >= columns ) continue;
+                int x = focal[i].x;
+                int y = focal[i].y;
+                if ( x < 0 || x > rows-1 || y < 0 || y > columns-1 ) continue;
 
-                /* Check intersection with local domain */
-                if (gx >= global_r_off && gx < global_r_off + local_rows &&
-                    gy >= global_c_off && gy < global_c_off + local_cols) {
-                    int lx = gx - global_r_off + 1;
-                    int ly = gy - global_c_off + 1;
-                    L(lx, ly) = focal[i].heat;
+                if ( x >= first_row && x <= last_row ) {
+                    int local_i = x - first_row + 1; 
+                    accessLocalMat( local_surface, local_i, y ) = focal[i].heat;
                 }
             }
 
-            /* 4.2.2 Manual Packing of Columns */
-            /* We copy the strided columns into contiguous buffers before sending */
-            for( i=0; i<local_rows; i++ ) {
-                send_left_buf[i]  = L(i+1, 1);            // Leftmost real column
-                send_right_buf[i] = L(i+1, local_cols);   // Rightmost real column
-            }
+            /* OPTIMIZATION 1: Async Ghosts */
+            MPI_Irecv( &accessLocalMat(local_surface, 0, 0), columns, MPI_FLOAT, up_neighbor, 0, MPI_COMM_WORLD, &requests[0] );
+            MPI_Irecv( &accessLocalMat(local_surface, local_rows+1, 0), columns, MPI_FLOAT, down_neighbor, 0, MPI_COMM_WORLD, &requests[1] );
+            MPI_Isend( &accessLocalMat(local_surface, 1, 0), columns, MPI_FLOAT, up_neighbor, 0, MPI_COMM_WORLD, &requests[2] );
+            MPI_Isend( &accessLocalMat(local_surface, local_rows, 0), columns, MPI_FLOAT, down_neighbor, 0, MPI_COMM_WORLD, &requests[3] );
 
-            /* 4.2.3 Exchange Ghosts (Async) */
-            int n_req = 0;
+            /*
+             * OPTIMIZATION 2 & 4: Overlapping Computation + LOOP FUSION
+             * We calculate the update AND the residual difference in one pass.
+             */
             
-            // Up/Down (Already Contiguous - No packing needed)
-            MPI_Irecv(&L(0, 1),            local_cols, MPI_FLOAT, up,   0, MPI_COMM_WORLD, &reqs[n_req++]);
-            MPI_Irecv(&L(local_rows+1, 1), local_cols, MPI_FLOAT, down, 0, MPI_COMM_WORLD, &reqs[n_req++]);
-            MPI_Isend(&L(1, 1),            local_cols, MPI_FLOAT, up,   0, MPI_COMM_WORLD, &reqs[n_req++]);
-            MPI_Isend(&L(local_rows, 1),   local_cols, MPI_FLOAT, down, 0, MPI_COMM_WORLD, &reqs[n_req++]);
+            local_residual = 0.0f; // Reset accumulator for this step
             
-            // Left/Right (Using Packed Buffers)
-            MPI_Irecv(recv_left_buf,  local_rows, MPI_FLOAT, left,  0, MPI_COMM_WORLD, &reqs[n_req++]);
-            MPI_Irecv(recv_right_buf, local_rows, MPI_FLOAT, right, 0, MPI_COMM_WORLD, &reqs[n_req++]);
-            MPI_Isend(send_left_buf,  local_rows, MPI_FLOAT, left,  0, MPI_COMM_WORLD, &reqs[n_req++]);
-            MPI_Isend(send_right_buf, local_rows, MPI_FLOAT, right, 0, MPI_COMM_WORLD, &reqs[n_req++]);
-
-            /* Compute Inner Block (Overlap) */
-            local_residual = 0.0f;
+            // Compute Inner Rows (Fusion)
+            int start_inner = 2;
+            int end_inner = local_rows - 1;
             
-            // Compute cells that don't touch ghosts
-            if (local_rows >= 3 && local_cols >= 3) {
-                for( i=2; i<local_rows; i++ ) {
-                    for( j=2; j<local_cols; j++ ) {
-                        float val = (L(i-1, j) + L(i+1, j) + L(i, j-1) + L(i, j+1)) / 4.0f;
-                        LC(i, j) = val;
-                        float diff = fabs(val - L(i, j));
+            if (local_rows >= 3) { 
+                for( i=start_inner; i<=end_inner; i++ ) {
+                    for( j=1; j<columns-1; j++ ) {
+                        float val = ( 
+                            accessLocalMat( local_surface, i-1, j ) +
+                            accessLocalMat( local_surface, i+1, j ) +
+                            accessLocalMat( local_surface, i, j-1 ) +
+                            accessLocalMat( local_surface, i, j+1 ) ) / 4.0f;
+                        
+                        accessLocalMat( local_surfaceCopy, i, j ) = val;
+                        
+                        /* Fused Residual Check */
+                        float diff = fabs( val - accessLocalMat( local_surface, i, j ) );
                         if (diff > local_residual) local_residual = diff;
                     }
                 }
             }
 
             /* Wait for Ghosts */
-            MPI_Waitall(n_req, reqs, MPI_STATUSES_IGNORE);
+            MPI_Waitall(4, requests, statuses);
 
-            /* 4.2.4 Unpack Columns */
-            /* Copy received buffers into the ghost columns */
-            for( i=0; i<local_rows; i++ ) {
-                L(i+1, 0) = recv_left_buf[i];
-                L(i+1, local_cols+1) = recv_right_buf[i];
-            }
-
-            /* Compute Boundaries (The "Frame" around the inner block) */
-            for( i=1; i<=local_rows; i++ ) {
-                int gx = global_r_off + (i-1);
-                if (gx == 0 || gx == rows-1) continue; // Skip global boundary
-
-                for( j=1; j<=local_cols; j++ ) {
-                    int gy = global_c_off + (j-1);
-                    if (gy == 0 || gy == columns-1) continue; // Skip global boundary
-
-                    // Skip if Inner (already computed)
-                    if (i >= 2 && i < local_rows && j >= 2 && j < local_cols) continue;
-
-                    float val = (L(i-1, j) + L(i+1, j) + L(i, j-1) + L(i, j+1)) / 4.0f;
-                    LC(i, j) = val;
-                    float diff = fabs(val - L(i, j));
-                    if (diff > local_residual) local_residual = diff;
+            /* Compute Boundary Rows (Fusion) */
+            int boundary_rows[2] = {1, local_rows};
+            for( int b=0; b<2; b++ ) {
+                int r = boundary_rows[b];
+                // Skip global boundaries
+                if (rank == 0 && r == 1) continue;
+                if (rank == nprocs-1 && r == local_rows) continue;
+                // Skip already computed
+                if (r >= start_inner && r <= end_inner && local_rows >= 3) continue; 
+                
+                if (r >= 1 && r <= local_rows) {
+                    for( j=1; j<columns-1; j++ ) {
+                        float val = ( 
+                            accessLocalMat( local_surface, r-1, j ) +
+                            accessLocalMat( local_surface, r+1, j ) +
+                            accessLocalMat( local_surface, r, j-1 ) +
+                            accessLocalMat( local_surface, r, j+1 ) ) / 4.0f;
+                            
+                        accessLocalMat( local_surfaceCopy, r, j ) = val;
+                        
+                        /* Fused Residual Check */
+                        float diff = fabs( val - accessLocalMat( local_surface, r, j ) );
+                        if (diff > local_residual) local_residual = diff;
+                    }
                 }
             }
 
-            /* Pointer Swap */
-            float *tmp = local_surface;
+            /* OPTIMIZATION 3: Pointer Swap */
+            float *swap_tmp = local_surface;
             local_surface = local_surfaceCopy;
-            local_surfaceCopy = tmp;
+            local_surfaceCopy = swap_tmp;
         }
         
         MPI_Allreduce(&local_residual, &global_residual, 1, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD);
@@ -481,36 +461,36 @@ int main(int argc, char *argv[]) {
                 && focal[target].active == 1 )
                 focal[target].active = 2;
 
+            /* OPTIMIZATION 5: Optimized Bounding Box Intersection for Teams */
             int radius;
             if ( teams[t].type == 1 ) radius = RADIUS_TYPE_1;
             else radius = RADIUS_TYPE_2_3;
             
-            /* Bounding Box Intersection (2D) */
-            int start_gx = teams[t].x - radius;
-            int end_gx   = teams[t].x + radius;
-            int start_gy = teams[t].y - radius;
-            int end_gy   = teams[t].y + radius;
+            // Calculate intersection of Team box and Local domain
+            int start_i = teams[t].x - radius;
+            int end_i = teams[t].x + radius;
+            
+            // Clamp to Global Surface
+            if (start_i < 1) start_i = 1; 
+            if (end_i > rows-2) end_i = rows-2;
+            
+            // Clamp to Local Domain
+            if (start_i < first_row) start_i = first_row;
+            if (end_i > last_row) end_i = last_row;
+            
+            // Only iterate if there is an overlap
+            if (start_i <= end_i) {
+                for( i=start_i; i<=end_i; i++ ) {
+                    int local_i = i - first_row + 1;
+                    
+                    for( j=teams[t].y-radius; j<=teams[t].y+radius; j++ ) {
+                        if ( j<1 || j>=columns-1 ) continue; 
 
-            if (start_gx < 1) start_gx = 1;
-            if (end_gx > rows-2) end_gx = rows-2;
-            if (start_gy < 1) start_gy = 1;
-            if (end_gy > columns-2) end_gy = columns-2;
-
-            if (start_gx < global_r_off) start_gx = global_r_off;
-            if (end_gx >= global_r_off + local_rows) end_gx = global_r_off + local_rows - 1;
-            if (start_gy < global_c_off) start_gy = global_c_off;
-            if (end_gy >= global_c_off + local_cols) end_gy = global_c_off + local_cols - 1;
-
-            if (start_gx <= end_gx && start_gy <= end_gy) {
-                for( i=start_gx; i<=end_gx; i++ ) {
-                    int lx = i - global_r_off + 1;
-                    for( j=start_gy; j<=end_gy; j++ ) {
-                        int ly = j - global_c_off + 1;
-                        
                         float dx = teams[t].x - i;
                         float dy = teams[t].y - j;
-                        if (sqrtf(dx*dx + dy*dy) <= radius) {
-                            L(lx, ly) = L(lx, ly) * 0.75f;
+                        float distance = sqrtf( dx*dx + dy*dy );
+                        if ( distance <= radius ) {
+                            accessLocalMat( local_surface, local_i, j ) = accessLocalMat( local_surface, local_i, j ) * ( 1 - 0.25 ); 
                         }
                     }
                 }
@@ -518,57 +498,33 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    /* MPI: Gather (Rank 0 collects subgrids) */
-    if (rank == 0) {
-        /* Copy my own data */
-        for( i=1; i<=local_rows; i++ ) {
-            for( j=1; j<=local_cols; j++ ) {
-                accessMat(surface, global_r_off + (i-1), global_c_off + (j-1)) = L(i, j);
-            }
-        }
-        
-        /* Receive from others */
-        for( int r=1; r<nprocs; r++ ) {
-            int r_grid_row = r / P_col;
-            int r_grid_col = r % P_col;
-            
-            int r_local_rows = (r_grid_row < rem_r) ? base_r + 1 : base_r;
-            int r_r_off;
-            if (r_grid_row < rem_r) r_r_off = r_grid_row * (base_r + 1);
-            else r_r_off = rem_r * (base_r + 1) + (r_grid_row - rem_r) * base_r;
+    /* MPI: Gather (Using Gatherv for safety with dynamic decomposition) */
+    int *recvcounts = NULL;
+    int *displs = NULL;
 
-            int r_local_cols = (r_grid_col < rem_c) ? base_c + 1 : base_c;
-            int r_c_off;
-            if (r_grid_col < rem_c) r_c_off = r_grid_col * (base_c + 1);
-            else r_c_off = rem_c * (base_c + 1) + (r_grid_col - rem_c) * base_c;
-            
-            float *tmp_buf = (float*)malloc(sizeof(float) * r_local_rows * r_local_cols);
-            MPI_Recv(tmp_buf, r_local_rows * r_local_cols, MPI_FLOAT, r, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            
-            for( i=0; i<r_local_rows; i++ ) {
-                for( j=0; j<r_local_cols; j++ ) {
-                    accessMat(surface, r_r_off + i, r_c_off + j) = tmp_buf[i*r_local_cols + j];
-                }
-            }
-            free(tmp_buf);
+    if (rank == 0) {
+        recvcounts = (int *)malloc(nprocs * sizeof(int));
+        displs = (int *)malloc(nprocs * sizeof(int));
+        int current_disp = 0;
+        for (int r = 0; r < nprocs; r++) {
+            int r_rows = (r < remainder) ? base_rows + 1 : base_rows;
+            recvcounts[r] = r_rows * columns;
+            displs[r] = current_disp;
+            current_disp += recvcounts[r];
         }
-    } else {
-        /* Send my inner data */
-        float *send_buf = (float*)malloc(sizeof(float) * local_rows * local_cols);
-        int idx = 0;
-        for( i=1; i<=local_rows; i++ ) {
-            for( j=1; j<=local_cols; j++ ) {
-                send_buf[idx++] = L(i, j);
-            }
-        }
-        MPI_Send(send_buf, local_rows * local_cols, MPI_FLOAT, 0, 0, MPI_COMM_WORLD);
-        free(send_buf);
     }
 
-    free(send_left_buf); free(send_right_buf);
-    free(recv_left_buf); free(recv_right_buf);
-    free(local_surface);
-    free(local_surfaceCopy);
+    MPI_Gatherv(&accessLocalMat(local_surface, 1, 0), local_rows * columns, MPI_FLOAT,
+                surface, recvcounts, displs, MPI_FLOAT,
+                0, MPI_COMM_WORLD);
+
+    if (rank == 0) {
+        free(recvcounts);
+        free(displs);
+    }
+    
+    free( local_surface );
+    free( local_surfaceCopy );
     
 /*
  *
