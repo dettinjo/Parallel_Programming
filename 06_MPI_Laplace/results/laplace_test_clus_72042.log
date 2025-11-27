@@ -1,0 +1,37 @@
+--- SLURM JOB 72042 (TEST) ---
+PROJECT_ROOT: /home/master/ppm/ppm-22/Escritorio/Parallel_Programming/06_MPI_Laplace
+Running on 1-node [test.q] (8-core test)
+Node: clus-login
+Loading modules...
+Modules loaded.
+--- Compiling Codes ---
+Compilation successful.
+
+--- Running TEST Experiments ---
+
+==================================================================================
+  Benchmark for Matrix Size: 512x512
+==================================================================================
+Running sequential baseline...
+Sequential Time: 0.048837 s
+
+Matrix Size     Processes  Nodes      Seq Time (s)    Par Time (s)    Speedup   
+--------------- ---------- ---------- --------------- --------------- ----------
+512x512         1          1          0.048837        ---             1.00      
+512x512         2          1          0.048837        0.018530        2.64      
+512x512         4          1          0.048837        0.012346        3.96      
+
+==================================================================================
+  Benchmark for Matrix Size: 1024x1024
+==================================================================================
+Running sequential baseline...
+Sequential Time: 0.104689 s
+
+Matrix Size     Processes  Nodes      Seq Time (s)    Par Time (s)    Speedup   
+--------------- ---------- ---------- --------------- --------------- ----------
+1024x1024       1          1          0.104689        ---             1.00      
+1024x1024       2          1          0.104689        0.038158        2.74      
+1024x1024       4          1          0.104689        0.023432        4.47      
+
+--- TEST Complete ---
+End time: jue nov 27 17:04:50 CET 2025
