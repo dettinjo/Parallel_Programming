@@ -1,0 +1,7 @@
+type,matrix_size,processes,nodes,time_seconds,speedup
+sequential,512,1,1,0.048841,1.00
+mpi,512,2,1,0.049172,0.99
+mpi,512,4,1,0.048993,1.00
+sequential,1024,1,1,0.105394,1.00
+mpi,1024,2,1,0.104609,1.01
+mpi,1024,4,1,0.106338,0.99
