@@ -20,7 +20,7 @@ SRC_DIR="${PROJECT_ROOT}/src"
 RESULTS_DIR="${PROJECT_ROOT}/results"
 
 SRC_SEQ="${SRC_DIR}/laplace_seq.c"
-SRC_MPI="${SRC_DIR}/laplace_mpi.c"
+SRC_MPI="${SRC_DIR}/laplace_mpi_v1.c"
 
 BIN_SEQ="${PROJECT_ROOT}/laplace_seq_bin"
 BIN_MPI="${PROJECT_ROOT}/laplace_mpi_bin"
@@ -47,10 +47,10 @@ echo "Modules loaded."
 
 # --- Compilation ---
 echo "--- Compiling Codes ---"
-mpicc -O2 -lm "${SRC_SEQ}" -o "${BIN_SEQ}"
+mpicc -fopenmp -O3 -lm "${SRC_SEQ}" -o "${BIN_SEQ}"
 if [ $? -ne 0 ]; then echo "Sequential compilation FAILED."; exit 1; fi
 
-mpicc -O2 -lm "${SRC_MPI}" -o "${BIN_MPI}"
+mpicc  -O3 -lm "${SRC_MPI}" -o "${BIN_MPI}"
 if [ $? -ne 0 ]; then echo "MPI compilation FAILED."; exit 1; fi
 echo "Compilation successful."
 

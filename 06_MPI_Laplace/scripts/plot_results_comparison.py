@@ -29,7 +29,8 @@ try:
     # --- FIX: Create a plot name based on the CSV's job ID ---
     base_filename = os.path.splitext(os.path.basename(latest_csv_path))[0]
     # e.g., "laplace_timings_70035" -> "laplace_speedup_70035.png"
-    plot_filename = base_filename.replace('timings', 'speedup') + 'V2_Compparison.png'
+    # plot_filename = base_filename.replace('timings', 'speedup') + 'V2_Compparison.png'
+    plot_filename = 'V3-v1_Comparison.png'
     plot_path = os.path.join(results_dir, plot_filename)
 
 except Exception as e:
@@ -38,13 +39,18 @@ except Exception as e:
 
 # --- 2. Load and Clean Data ---
 try:
-    df = pd.read_csv(latest_csv_path)
+    
+    df_v1 = pd.read_csv(v1_csv_path)
+    df_v1['speedup'] = pd.to_numeric(df_v1['speedup'], errors='coerce')
+    df_v1 = df_v1.dropna(subset=['speedup'])
+    
+    df = pd.read_csv(v2_csv_path)
     df['speedup'] = pd.to_numeric(df['speedup'], errors='coerce')
     df = df.dropna(subset=['speedup'])
     
 
     
-    if df.empty:
+    if df.empty or df_v1.empty:
         print("Error: The CSV file is empty or contains no valid speedup data.")
         sys.exit(1)
 
@@ -55,18 +61,25 @@ except Exception as e:
 # --- 3. Prepare for Plotting ---
 plt.style.use('ggplot')
 fig, ax = plt.subplots(figsize=(12, 8))
+ax1 = plt.twinx(ax)
 matrix_sizes = sorted(df['matrix_size'].unique())
 max_processes = df['processes'].max()
 
 # --- 4. Plot Ideal Speedup Line ---
 ax.plot([1, max_processes], [1, max_processes], 'k--', label='Ideal Speedup')
+ax.set_ylim(0,100)
+ax1.set_ylim(0,100)
 # --- 5. Loop and Plot Data for Each Matrix Size ---
 colors_matrix = plt.cm.plasma(np.linspace(0, 1, len(matrix_sizes)))
 for i, size in enumerate(matrix_sizes):
     df_size = df[df['matrix_size'] == size]
     mpi_data = df_size[df_size['type'] == 'mpi'].sort_values(by='processes')
     seq_data = df_size[df_size['type'] == 'sequential']
-
+    
+    df_v1_size = df_v1[df_v1['matrix_size'] == size]
+    mpi_v1_data = df_v1_size[df_v1_size['type'] == 'mpi'].sort_values(by='processes')
+    seq_v1_data = df_v1_size[df_v1_size['type'] == 'sequential']
+    
     if not mpi_data.empty:
         ax.plot(mpi_data['processes'], 
                 mpi_data['speedup'], 
@@ -74,6 +87,14 @@ for i, size in enumerate(matrix_sizes):
                 marker='o',
                 color=colors_matrix[i],
                 linestyle='-',
+                alpha = 0.9)
+        
+        ax1.plot(mpi_v1_data['processes'], 
+                mpi_v1_data['speedup'], 
+                label=f'Size: {size}x{size}', 
+                marker='.',
+                color=colors_matrix[i],
+                linestyle='dotted',
                 alpha = 0.9)
     
     # if not seq_data.empty:
