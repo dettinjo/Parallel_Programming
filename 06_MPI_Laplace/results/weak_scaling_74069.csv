@@ -1,0 +1,5 @@
+processes,matrix_size,elements_per_proc,time_seconds,efficiency
+1,1024,1048576,,1.00
+4,2048,1048576,4 total processes failed to start,
+16,4096,1048576,16 total processes failed to start,
+64,8192,1048576,64 total processes failed to start,

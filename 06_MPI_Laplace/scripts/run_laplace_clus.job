@@ -12,7 +12,6 @@
 #SBATCH --time=00:30:00
 
 # --- Dynamic Path Setup ---
-# Assumes you run 'sbatch' from the 'scripts' folder.
 PROJECT_ROOT=$( cd -- "${SLURM_SUBMIT_DIR}/../" &> /dev/null && pwd )
 
 # --- File Structure Paths ---
