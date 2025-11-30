@@ -1,0 +1,62 @@
+cc1: fatal error: /mnt/project/laplace_mpi_v1.c: No existe el fichero o el directorio
+compilation terminated.
+=== WEAK SCALING ANALYSIS ===
+Maintaining ~1048576 elements per process
+Testing 1 process, 1024x1024...
+--------------------------------------------------------------------------
+mpirun was unable to launch the specified application as it could not access
+or execute an executable:
+
+Executable: /home/master/ppm/ppm-22/Escritorio/Parallel_Programming/06_MPI_Laplace/laplace_mpi_bin
+Node: clus01
+
+while attempting to start process rank 0.
+--------------------------------------------------------------------------
+1 process: s
+Testing 4 processes, 2048x2048...
+--------------------------------------------------------------------------
+mpirun was unable to launch the specified application as it could not access
+or execute an executable:
+
+Executable: /home/master/ppm/ppm-22/Escritorio/Parallel_Programming/06_MPI_Laplace/laplace_mpi_bin
+Node: clus01
+
+while attempting to start process rank 0.
+--------------------------------------------------------------------------
+awk: línea ord.:1: BEGIN {printf "%.3f",  / 4 total processes failed to start}
+awk: línea ord.:1:                         ^ expresión regular sin terminar
+awk: línea ord.:1: BEGIN {printf "%.3f",  / 4 total processes failed to start}
+awk: línea ord.:1:                                                            ^ nueva línea o fin de la cadena inesperados
+4 processes: 4 total processes failed to starts, efficiency: 
+Testing 16 processes, 4096x4096...
+--------------------------------------------------------------------------
+mpirun was unable to launch the specified application as it could not access
+or execute an executable:
+
+Executable: /home/master/ppm/ppm-22/Escritorio/Parallel_Programming/06_MPI_Laplace/laplace_mpi_bin
+Node: clus01
+
+while attempting to start process rank 0.
+--------------------------------------------------------------------------
+awk: línea ord.:1: BEGIN {printf "%.3f",  / 16 total processes failed to start}
+awk: línea ord.:1:                         ^ expresión regular sin terminar
+awk: línea ord.:1: BEGIN {printf "%.3f",  / 16 total processes failed to start}
+awk: línea ord.:1:                                                             ^ nueva línea o fin de la cadena inesperados
+16 processes: 16 total processes failed to starts, efficiency: 
+Testing 64 processes, 8192x8192...
+--------------------------------------------------------------------------
+mpirun was unable to launch the specified application as it could not access
+or execute an executable:
+
+Executable: /home/master/ppm/ppm-22/Escritorio/Parallel_Programming/06_MPI_Laplace/laplace_mpi_bin
+Node: clus01
+
+while attempting to start process rank 0.
+--------------------------------------------------------------------------
+awk: línea ord.:1: BEGIN {printf "%.3f",  / 64 total processes failed to start}
+awk: línea ord.:1:                         ^ expresión regular sin terminar
+awk: línea ord.:1: BEGIN {printf "%.3f",  / 64 total processes failed to start}
+awk: línea ord.:1:                                                             ^ nueva línea o fin de la cadena inesperados
+64 processes: 64 total processes failed to starts, efficiency: 
+=== WEAK SCALING COMPLETE ===
+Results saved to: ../results/weak_scaling_74069.csv

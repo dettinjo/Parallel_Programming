@@ -1,0 +1,13 @@
+matrix_size,processes,total_time,comm_time,comp_time,error_time,other_time,comm_percent,comp_percent,error_percent,efficiency,iterations
+matrix_size=1024x100,processes=4,total_time=0.018308,comm_time=0.001433,comp_time=0.004066,error_time=0.012495,other_time=0.000314,comm_percent=7.8,comp_percent=22.2,error_percent=68.2,efficiency=0.222,iterations=100
+matrix_size=1024x100,processes=8,total_time=0.011848,comm_time=0.002852,comp_time=0.002042,error_time=0.008696,other_time=-0.001743,comm_percent=24.1,comp_percent=17.2,error_percent=73.4,efficiency=0.172,iterations=100
+matrix_size=1024x100,processes=12,total_time=0.009886,comm_time=0.003824,comp_time=0.001272,error_time=0.007799,other_time=-0.003009,comm_percent=38.7,comp_percent=12.9,error_percent=78.9,efficiency=0.129,iterations=100
+matrix_size=1024x100,processes=24,total_time=0.034785,comm_time=0.070771,comp_time=0.000847,error_time=0.033683,other_time=-0.070516,comm_percent=203.5,comp_percent=2.4,error_percent=96.8,efficiency=0.024,iterations=100
+matrix_size=2048x100,processes=4,total_time=0.037166,comm_time=0.001964,comp_time=0.009847,error_time=0.023591,other_time=0.001765,comm_percent=5.3,comp_percent=26.5,error_percent=63.5,efficiency=0.265,iterations=100
+matrix_size=2048x100,processes=8,total_time=0.019825,comm_time=0.002826,comp_time=0.004050,error_time=0.014138,other_time=-0.001190,comm_percent=14.3,comp_percent=20.4,error_percent=71.3,efficiency=0.204,iterations=100
+matrix_size=2048x100,processes=12,total_time=0.015356,comm_time=0.005635,comp_time=0.002607,error_time=0.011648,other_time=-0.004534,comm_percent=36.7,comp_percent=17.0,error_percent=75.8,efficiency=0.170,iterations=100
+matrix_size=2048x100,processes=24,total_time=0.035611,comm_time=0.076894,comp_time=0.001306,error_time=0.033614,other_time=-0.076202,comm_percent=215.9,comp_percent=3.7,error_percent=94.4,efficiency=0.037,iterations=100
+matrix_size=4096x100,processes=4,total_time=0.078575,comm_time=0.003429,comp_time=0.021313,error_time=0.045881,other_time=0.007951,comm_percent=4.4,comp_percent=27.1,error_percent=58.4,efficiency=0.271,iterations=100
+matrix_size=4096x100,processes=8,total_time=0.040153,comm_time=0.004622,comp_time=0.009967,error_time=0.026296,other_time=-0.000731,comm_percent=11.5,comp_percent=24.8,error_percent=65.5,efficiency=0.248,iterations=100
+matrix_size=4096x100,processes=12,total_time=0.028091,comm_time=0.004698,comp_time=0.006415,error_time=0.019223,other_time=-0.002245,comm_percent=16.7,comp_percent=22.8,error_percent=68.4,efficiency=0.228,iterations=100
+matrix_size=4096x100,processes=24,total_time=0.050908,comm_time=0.079243,comp_time=0.002734,error_time=0.047137,other_time=-0.078206,comm_percent=155.7,comp_percent=5.4,error_percent=92.6,efficiency=0.054,iterations=100

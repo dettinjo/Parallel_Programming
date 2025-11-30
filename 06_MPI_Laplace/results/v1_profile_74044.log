@@ -1,0 +1,26 @@
+Starting V1 performance profiling...
+Running: 1024x1024 matrix with 4 processes
+Running: 1024x1024 matrix with 8 processes
+Running: 1024x1024 matrix with 12 processes
+Running: 1024x1024 matrix with 24 processes
+Running: 2048x2048 matrix with 4 processes
+Running: 2048x2048 matrix with 8 processes
+Running: 2048x2048 matrix with 12 processes
+Running: 2048x2048 matrix with 24 processes
+Running: 4096x4096 matrix with 4 processes
+Running: 4096x4096 matrix with 8 processes
+Running: 4096x4096 matrix with 12 processes
+Running: 4096x4096 matrix with 24 processes
+Running: 8192x8192 matrix with 4 processes
+Running: 8192x8192 matrix with 8 processes
+Running: 8192x8192 matrix with 12 processes
+Running: 8192x8192 matrix with 24 processes
+Running: 16384x16384 matrix with 4 processes
+Running: 16384x16384 matrix with 8 processes
+Running: 16384x16384 matrix with 12 processes
+Running: 16384x16384 matrix with 24 processes
+Running: 32768x32768 matrix with 4 processes
+Running: 32768x32768 matrix with 8 processes
+Running: 32768x32768 matrix with 12 processes
+Running: 32768x32768 matrix with 24 processes
+V1 profiling complete. Results saved to: /home/master/ppm/ppm-22/Escritorio/Parallel_Programming/06_MPI_Laplace/results/v1_performance_profile_74044.csv
