@@ -1,0 +1,2 @@
+nvc-Error-Switch -gpu with unknown keyword ../src/laplace
+nvc-Error-Switch -o expects an argument

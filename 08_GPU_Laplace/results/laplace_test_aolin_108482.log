@@ -1,0 +1,38 @@
+Run on computer:
+aolin-gpu-1.uab.cat
+
+Compiling ../src/laplace.c for GPU compute capability ../src/laplace as file 
+-gpu=cc35|cc50|cc60|cc62|cc70|cc72|cc75|cc80|ccall|cudaX.Y|fastmath|[no]flushz|[no]fma|keep|[no]lineinfo|llc|zeroinit|[no]autocollapse|deepcopy|loadcache:{L1|L2}|maxregcount:<n>|pinned|[no]rdc|safecache|[no]unroll|[no]managed|beta|autocompare|redundant
+                    Select specific options for GPU code generation
+    cc35            Compile for compute capability 3.5
+    cc50            Compile for compute capability 5.0
+    cc60            Compile for compute capability 6.0
+    cc62            Compile for compute capability 6.2
+    cc70            Compile for compute capability 7.0
+    cc72            Compile for compute capability 7.2
+    cc75            Compile for compute capability 7.5
+    cc80            Compile for compute capability 8.0
+    ccall           Compile for all supported compute capabilities
+    cudaX.Y         Use CUDA X.Y Toolkit compatibility, where installed
+    fastmath        Use fast math library
+    [no]flushz      Enable flush-to-zero mode on the GPU
+    [no]fma         Generate fused mul-add instructions (default at -O3)
+    keep            Keep kernel files
+    [no]lineinfo    Generate GPU line information
+    zeroinit        Initialize allocated device memory with zero
+    [no]autocollapse
+                    Automatically collapse tightly nested parallel loops
+    deepcopy        Enable Full Deepcopy support in OpenACC Fortran
+    loadcache       Choose what hardware level cache to use for global memory loads
+     L1             Use L1 cache
+     L2             Use L2 cache
+    maxregcount:<n> Set maximum number of registers to use on the GPU
+    pinned          Use CUDA Pinned Memory
+    [no]rdc         Generate relocatable device code
+    safecache       Allows variable-sized array sections in cache directives and assumes they fit into CUDA shared memory
+    [no]unroll      Enable automatic inner loop unrolling (default at -O3)
+    [no]managed     Use CUDA Managed Memory
+    beta            Enable beta code generation features
+    autocompare     Automatically compare CPU/GPU results: implies redundant
+    redundant       Redundant CPU/GPU execution
+-o<outputfile>      Name the output file
