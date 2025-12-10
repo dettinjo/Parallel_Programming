@@ -1,0 +1,130 @@
+#!/bin/bash
+
+# --- SLURM Configuration (Aolin Cluster) ---
+#SBATCH --job-name=lap_opt
+#SBATCH --output=laplace_run_%j.log
+#SBATCH --error=laplace_run_%j.err
+#SBATCH --partition=cuda-ext.q
+#SBATCH --gres=gpu:1
+#SBATCH --exclusive
+#SBATCH --time=00:15:00
+
+# --- Intelligent Path Setup ---
+# This block detects where the script is launched from and sets the root accordingly.
+if [[ "$SLURM_SUBMIT_DIR" == *"scripts" ]]; then
+    # Launched from scripts/ -> Root is one level up
+    PROJECT_ROOT="$(dirname "${SLURM_SUBMIT_DIR}")"
+    SCRIPT_REL_PATH="." # We are inside scripts
+    # Redirect logs from current dir (scripts) to proper results dir
+    # Note: SLURM creates logs before script runs, so we move them later.
+else
+    # Launched from project root -> Root is current dir
+    PROJECT_ROOT="${SLURM_SUBMIT_DIR}"
+    SCRIPT_REL_PATH="./scripts"
+fi
+
+# --- File Paths ---
+SRC_DIR="${PROJECT_ROOT}/src"
+RESULTS_DIR="${PROJECT_ROOT}/results"
+LOG_DIR="${RESULTS_DIR}/log"
+ERR_DIR="${RESULTS_DIR}/err"
+CSV_DIR="${RESULTS_DIR}/csv"
+
+# Source Files
+SRC_BASE="${SRC_DIR}/laplace_baseline.c"
+SRC_OPT="${SRC_DIR}/laplace_opt.c"
+
+# Binaries (Stored in src for cleanliness)
+BIN_BASE="${SRC_DIR}/laplace_baseline_bin"
+BIN_OPT="${SRC_DIR}/laplace_opt_bin"
+
+# Output Data
+CSV_FILE="${CSV_DIR}/laplace_timings_${SLURM_JOB_ID}.csv"
+PROFILE_OUT="${RESULTS_DIR}/profile_laplace_${SLURM_JOB_ID}"
+
+# --- Setup Directories ---
+mkdir -p "${LOG_DIR}" "${ERR_DIR}" "${CSV_DIR}"
+
+# --- Header ---
+echo "--- SLURM JOB ${SLURM_JOB_ID} ---"
+echo "Launch Dir:   ${SLURM_SUBMIT_DIR}"
+echo "Project Root: ${PROJECT_ROOT}"
+echo "Running on:   $(hostname)"
+echo "Partition:    cuda-int.q"
+
+# --- Load Environment ---
+module purge
+module add nvhpc/21.2
+export CUDA_VISIBLE_DEVICES=0
+
+echo "--- GPU Info ---"
+nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
+
+# --- Compilation ---
+echo ""
+echo "--- Compiling ---"
+
+# 1. Compile Baseline (Static 4096)
+echo "Compiling Baseline..."
+nvc -fast -acc=gpu -gpu=cc80 -Minfo=accel "${SRC_BASE}" -o "${BIN_BASE}"
+if [ $? -ne 0 ]; then echo "Baseline compilation FAILED."; exit 1; fi
+
+# 2. Compile Optimized (Dynamic)
+echo "Compiling Optimized..."
+nvc -fast -acc=gpu -gpu=cc80 -Minfo=accel "${SRC_OPT}" -o "${BIN_OPT}"
+if [ $? -ne 0 ]; then echo "Optimized compilation FAILED."; exit 1; fi
+
+# --- Run & Benchmark ---
+TEST_SIZE=4096
+ITERATIONS=10000
+
+echo ""
+echo "--- Running Benchmark (${TEST_SIZE}x${TEST_SIZE}, ${ITERATIONS} iters) ---"
+
+# Initialize CSV
+echo "type,size,iterations,time_seconds,speedup" > "${CSV_FILE}"
+
+# 1. Run Baseline
+echo "Running Baseline..."
+START=$(date +%s.%N)
+${BIN_BASE} > /dev/null
+END=$(date +%s.%N)
+BASE_TIME=$(echo "$END - $START" | bc)
+printf "Baseline Time: %.4f s\n" "${BASE_TIME}"
+echo "baseline,${TEST_SIZE},${ITERATIONS},${BASE_TIME},1.00" >> "${CSV_FILE}"
+
+# 2. Run Optimized
+echo "Running Optimized..."
+START=$(date +%s.%N)
+${BIN_OPT} ${TEST_SIZE} ${TEST_SIZE} ${ITERATIONS} > /dev/null
+END=$(date +%s.%N)
+OPT_TIME=$(echo "$END - $START" | bc)
+printf "Optimized Time: %.4f s\n" "${OPT_TIME}"
+
+# 3. Calculate Speedup
+if (( $(echo "$OPT_TIME > 0" | bc -l) )); then
+    SPEEDUP=$(echo "$BASE_TIME / $OPT_TIME" | bc -l)
+else
+    SPEEDUP="Err"
+fi
+printf "Speedup: %.2fx\n" "${SPEEDUP}"
+echo "optimized,${TEST_SIZE},${ITERATIONS},${OPT_TIME},${SPEEDUP}" >> "${CSV_FILE}"
+
+# --- Profiling ---
+echo ""
+echo "--- Profiling (Short Run: 100 iters) ---"
+nsys profile --trace=cuda,openacc --stats=true --force-overwrite true -o "${PROFILE_OUT}" \
+    ${BIN_OPT} ${TEST_SIZE} ${TEST_SIZE} 100
+
+echo "Profile saved to: ${PROFILE_OUT}.qdrep"
+
+# --- Cleanup ---
+rm -f "${BIN_BASE}" "${BIN_OPT}"
+
+# Move the SLURM logs to the correct folder (since they default to submission dir)
+# We wait 1 sec to ensure file handles are closed
+sleep 1
+mv "${SLURM_SUBMIT_DIR}/laplace_run_${SLURM_JOB_ID}.log" "${LOG_DIR}/" 2>/dev/null
+mv "${SLURM_SUBMIT_DIR}/laplace_run_${SLURM_JOB_ID}.err" "${ERR_DIR}/" 2>/dev/null
+
+echo "--- Experiment Complete ---"

@@ -34,7 +34,6 @@ void laplace_copy ( float *in, float *out, int n, int m )
       out[j*m+i]= in[j*m+i];
 }
 
-
 void laplace_init ( float *in, int n, int m )
 {
   int i, j;
@@ -55,34 +54,35 @@ int main(int argc, char** argv)
   const float tol = 1.0e-8f;
   float error= 1.0f;    
 
-  // get runtime arguments: n, m and iter_max 
   if (argc>1) {  n        = atoi(argv[1]); }
   if (argc>2) {  m        = atoi(argv[2]); }
   if (argc>3) {  iter_max = atoi(argv[3]); }
 
-  A    = (float*) malloc( n*m*sizeof(float) );
-  Anew = (float*) malloc( n*m*sizeof(float) );
+  A = (float *)malloc(n*m*sizeof(float));
+  Anew = (float *)malloc(n*m*sizeof(float));
 
-  //  set boundary conditions
   laplace_init (A, n, m);
-  A[(n/128)*m+m/128] = 1.0f; // set singular point
+  A[(n/128)*m+m/128] = 1.0f; 
 
-  printf("Jacobi relaxation Calculation: %d x %d mesh,"
-         " maximum of %d iterations\n", 
+  printf("Jacobi relaxation Calculation: %d x %d mesh, maximum of %d iterations\n", 
          n, m, iter_max );
 
   int iter = 0;
+
   while ( error > tol && iter < iter_max )
   {
     iter++;
     laplace_step (A, Anew, n, m);
-    error= laplace_error (A, Anew, n, m);
+    error = laplace_error (A, Anew, n, m);
     laplace_copy (Anew, A, n, m);
+
     if (iter % (iter_max/10) == 0) printf("%5d, %0.6f\n", iter, error);
   }
+
   printf("Total Iterations: %5d, ERROR: %0.6f, ", iter, error);
   printf("A[%d][%d]= %0.6f\n", n/128, m/128, A[(n/128)*m+m/128]);
 
-  free(A); 
+  free(A);
   free(Anew);
+  return 0;
 }
