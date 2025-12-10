@@ -1,0 +1,4 @@
+Run on computer:
+aolin-gpu-2.uab.cat
+
+Compiling ../src/laplace.c for GPU compute capability cc70 as file laplace_gpu_exec

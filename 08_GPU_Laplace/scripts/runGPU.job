@@ -1,6 +1,11 @@
 #!/bin/bash -l
 #SBATCH --exclusive
 #SBATCH -t 1
+#SBATCH --job-name=AHHHH
+#SBATCH --output=test_aolin_%j.log
+#SBATCH --error=test_aolin_%j.err
+#SBATCH --partition=research.q           
+#SBATCH --nodelist=aolin-gpu-2                       
 
 # echo name of host processor (for documentation)
 echo "Run on computer:"

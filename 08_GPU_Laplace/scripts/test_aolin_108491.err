@@ -1,0 +1,28 @@
+"../src/laplace.c", line 75: warning: last line of file ends without a newline
+  }
+   ^
+
+main:
+     53, Loop is parallelizable
+         Generating implicit copyout(Anew[1:4094][1:4094]) [if not already present]
+         Generating implicit copyin(A[:][:]) [if not already present]
+     54, Loop is parallelizable
+         Generating Tesla code
+         53, #pragma acc loop gang, vector(128) collapse(2) /* blockIdx.x threadIdx.x collapsed-innermost */
+         54,   /* blockIdx.x threadIdx.x auto-collapsed */
+     59, Loop is parallelizable
+         Generating implicit copyin(A[1:4094][1:4094]) [if not already present]
+         Generating implicit copy(error) [if not already present]
+         Generating implicit copyin(Anew[1:4094][1:4094]) [if not already present]
+     60, Loop is parallelizable
+         Generating Tesla code
+         59, #pragma acc loop gang, vector(128) collapse(2) /* blockIdx.x threadIdx.x collapsed-innermost */
+             Generating implicit reduction(max:error)
+         60,   /* blockIdx.x threadIdx.x auto-collapsed */
+     64, Loop is parallelizable
+         Generating implicit copyin(Anew[1:4094][1:4094]) [if not already present]
+         Generating implicit copyout(A[1:4094][1:4094]) [if not already present]
+     65, Loop is parallelizable
+         Generating Tesla code
+         64, #pragma acc loop gang, vector(128) collapse(2) /* blockIdx.x threadIdx.x collapsed-innermost */
+         65,   /* blockIdx.x threadIdx.x auto-collapsed */
