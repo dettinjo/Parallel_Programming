@@ -1,8 +1,0 @@
-========================================
-Node: clus09.hpc.local
-Partition: nodo.q
-========================================
-FAILURE: No nvidia-smi found.
-FAILURE: nvhpc/21.2 module NOT found.
-Available modules:
-========================================
