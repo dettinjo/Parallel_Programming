@@ -1,0 +1,72 @@
+=== GPU BENCHMARK STARTED (111153) ===
+Node:      aolin-gpu-1.uab.cat
+GPU Info:
+NVIDIA GeForce RTX 2070, 7.5, 8192 MiB
+NVIDIA GeForce GTX 1080 Ti, 6.1, 11264 MiB
+
+--- Compiling (Flags: -fast -acc=gpu -gpu=cc60,cc70,cc75,cc80 -Minfo=accel) ---
+
+--- Running Benchmark (4096x4096, 10000 iters) ---
+1. Baseline...
+   Time: 12.2666 s
+2. Optimized...
+   Time: 7.6140 s
+   Speedup: 1.61x
+
+--- Profiling (Short Run: 100 iters) ---
+Jacobi relaxation: 4096 x 4096 mesh, max 100 iterations
+    0, 1.000000
+Total Iterations:   100, ERROR: 0.413879, A[32][32]= 0.006335
+
+
+CUDA API Statistics:
+
+ Time(%)  Total Time (ns)  Num Calls   Average    Minimum   Maximum           Name        
+ -------  ---------------  ---------  ----------  --------  --------  --------------------
+    48.1         74038015          4  18509503.8     10081  68477644  cuStreamSynchronize 
+    44.3         68141851          2  34070925.5  34069650  34072201  cuMemHostAlloc      
+     4.9          7594087         12    632840.6      1240   2515184  cuEventSynchronize  
+     0.8          1268807          2    634403.5     10547   1258260  cuMemAllocHost_v2   
+     0.7          1056799        104     10161.5      8238     56264  cuLaunchKernel      
+     0.7          1021215          6    170202.5      9284    413392  cuMemAlloc_v2       
+     0.1           187108          7     26729.7      8235     62521  cuMemcpyDtoHAsync_v2
+     0.1           179536          4     44884.0     42894     47574  cuMemcpyHtoDAsync_v2
+     0.1           157187          1    157187.0    157187    157187  cuModuleLoadDataEx  
+     0.1           114469         14      8176.4      2594     25676  cuEventRecord       
+     0.0            36558          2     18279.0     17383     19175  cuStreamCreate      
+     0.0            29978          2     14989.0     14890     15088  cuMemsetD32Async    
+     0.0            20817          8      2602.1       994      5974  cuEventCreate       
+
+
+
+CUDA Kernel Statistics:
+
+ Time(%)  Total Time (ns)  Instances  Average   Minimum  Maximum        Name      
+ -------  ---------------  ---------  --------  -------  -------  ----------------
+    98.6         71050839        100  710508.4   709409   711618  main_56_gpu     
+     1.2           839746          2  419873.0   419585   420161  main_82_gpu     
+     0.2           147520          2   73760.0    73728    73792  main_82_gpu__red
+
+
+
+CUDA Memory Operation Statistics (by time):
+
+ Time(%)  Total Time (ns)  Operations   Average   Minimum  Maximum      Operation     
+ -------  ---------------  ----------  ---------  -------  -------  ------------------
+    58.6         14208220           4  3552055.0  3539591  3557351  [CUDA memcpy HtoD]
+    41.4         10040597           7  1434371.0     1056  2509477  [CUDA memcpy DtoH]
+     0.0             3104           2     1552.0     1376     1728  [CUDA memset]     
+
+
+
+CUDA Memory Operation Statistics (by size in KiB):
+
+   Total    Operations   Average    Minimum    Maximum       Operation     
+ ---------  ----------  ---------  ---------  ---------  ------------------
+ 65536.008           7   9362.287      0.004  16383.938  [CUDA memcpy DtoH]
+ 65536.000           4  16384.000  16384.000  16384.000  [CUDA memcpy HtoD]
+     0.008           2      0.004      0.004      0.004  [CUDA memset]     
+
+✅ Benchmark Complete.
+--- Cleaning up ---
+Moving logs to /home/master/ppm/ppm-43/Parallel Programming/08_GPU_OpenACC/results...

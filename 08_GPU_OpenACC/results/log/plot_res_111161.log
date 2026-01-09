@@ -1,0 +1,5 @@
+Generating CSV data at: ../results/csv/final_comparison.csv
+Running Python plotting script...
+Reading data from: ../results/csv/final_comparison.csv
+Plot saved successfully to ../results/plots/performance_comparison.png
+✅ Success! Plot saved to: ../results/plots/performance_comparison.png

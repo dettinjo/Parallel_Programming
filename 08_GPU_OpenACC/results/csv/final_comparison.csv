@@ -1,0 +1,6 @@
+Version,Time_Seconds
+Baseline (Static),12.26
+V1: Basic Dynamic,9.06
+V2: Tile(32x4),4.13
+V3: Tile(4x32) [Fail],7.61
+V4: Final (Collapse),4.14

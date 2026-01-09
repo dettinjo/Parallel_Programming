@@ -20,8 +20,9 @@ RESULTS_DIR="${PROJECT_ROOT}/results"
 LOG_DIR="${RESULTS_DIR}/log"
 ERR_DIR="${RESULTS_DIR}/err"
 CSV_DIR="${RESULTS_DIR}/csv"
+PROF_DIR="${RESULTS_DIR}/profiling"  # NEW
 
-mkdir -p "${LOG_DIR}" "${ERR_DIR}" "${CSV_DIR}"
+mkdir -p "${LOG_DIR}" "${ERR_DIR}" "${CSV_DIR}" "${PROF_DIR}" # Added PROF_DIR
 
 # --- 2. Configuration & Naming ---
 JOB_ID=${SLURM_JOB_ID}
@@ -29,12 +30,12 @@ JOB_NAME=${SLURM_JOB_NAME}
 PARTITION=${SLURM_JOB_PARTITION}
 
 CSV_FILE="${CSV_DIR}/timings_full_${PARTITION}_${JOB_ID}.csv"
-PROFILE_OUT="${RESULTS_DIR}/profile_full_${PARTITION}_${JOB_ID}"
+# Point profile output directly to the profiling folder (without extension, nsys adds it)
+PROFILE_OUT="${PROF_DIR}/profile_full_${PARTITION}_${JOB_ID}" 
 BIN_BASE="${SRC_DIR}/laplace_base_${JOB_ID}"
 BIN_OPT="${SRC_DIR}/laplace_opt_${JOB_ID}"
 
 # --- 3. Automatic Cleanup Function ---
-# This runs automatically when the script exits (success or failure)
 cleanup() {
     echo "--- Cleaning up ---"
     rm -f "${BIN_BASE}" "${BIN_OPT}"
@@ -59,11 +60,6 @@ nvidia-smi --query-gpu=name,compute_cap,memory.total --format=csv,noheader
 module purge
 module add nvhpc/21.2
 
-# FLAGS EXPLANATION:
-# cc60 = Pascal (GTX 1080 Ti)
-# cc70 = Volta (V100 - just in case)
-# cc75 = Turing (RTX 2070)
-# cc80 = Ampere (A100 / RTX 3080 compatibility mode)
 FLAGS="-fast -acc=gpu -gpu=cc60,cc70,cc75,cc80 -Minfo=accel"
 
 echo -e "\n--- Compiling (Flags: ${FLAGS}) ---"
@@ -108,6 +104,7 @@ echo "optimized,${N},${ITER},${TIME_OPT},${SPEEDUP}" >> "${CSV_FILE}"
 
 # --- 7. Profiling ---
 echo -e "\n--- Profiling (Short Run: 100 iters) ---"
+# Output is already set to ${PROF_DIR} above
 nsys profile --trace=cuda,openacc --stats=true --force-overwrite true -o "${PROFILE_OUT}" \
     "${BIN_OPT}" ${N} ${M} 100
 

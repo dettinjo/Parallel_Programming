@@ -1,0 +1,3 @@
+type,size,iterations,time_seconds,speedup
+baseline,4096,10000,12.266630609,1.00
+optimized,4096,10000,7.613982887,1.61106621738589153201

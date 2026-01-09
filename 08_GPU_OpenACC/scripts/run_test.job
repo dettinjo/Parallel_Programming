@@ -20,9 +20,10 @@ RESULTS_DIR="${PROJECT_ROOT}/results"
 LOG_DIR="${RESULTS_DIR}/log"
 ERR_DIR="${RESULTS_DIR}/err"
 CSV_DIR="${RESULTS_DIR}/csv"
+PROF_DIR="${RESULTS_DIR}/profiling" # NEW
 
 # Ensure all result folders exist
-mkdir -p "${LOG_DIR}" "${ERR_DIR}" "${CSV_DIR}"
+mkdir -p "${LOG_DIR}" "${ERR_DIR}" "${CSV_DIR}" "${PROF_DIR}"
 
 # --- 2. Configuration ---
 JOB_ID=${SLURM_JOB_ID}

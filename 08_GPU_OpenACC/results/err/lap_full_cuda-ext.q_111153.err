@@ -1,0 +1,60 @@
+"/home/master/ppm/ppm-43/Parallel Programming/08_GPU_OpenACC/src/laplace_baseline.c", line 76: warning: last line of file ends without a newline
+  }
+   ^
+
+main:
+     49, Generating copy(A[:][:]) [if not already present]
+         Generating create(Anew[:][:]) [if not already present]
+     54, Loop is parallelizable
+     55, Loop is parallelizable
+         Generating Tesla code
+         54, #pragma acc loop gang, vector(128) collapse(2) /* blockIdx.x threadIdx.x collapsed-innermost */
+         55,   /* blockIdx.x threadIdx.x auto-collapsed */
+     59, Loop is parallelizable
+         Generating implicit copy(error) [if not already present]
+     60, Loop is parallelizable
+         Generating Tesla code
+         59, #pragma acc loop gang, vector(128) collapse(2) /* blockIdx.x threadIdx.x collapsed-innermost */
+             Generating implicit reduction(max:error)
+         60,   /* blockIdx.x threadIdx.x auto-collapsed */
+     64, Loop is parallelizable
+     65, Loop is parallelizable
+         Generating Tesla code
+         64, #pragma acc loop gang, vector(128) collapse(2) /* blockIdx.x threadIdx.x collapsed-innermost */
+         65,   /* blockIdx.x threadIdx.x auto-collapsed */
+"/home/master/ppm/ppm-43/Parallel Programming/08_GPU_OpenACC/src/laplace_opt.c", line 125: warning: last line of file ends without a newline
+  }
+   ^
+
+main:
+     54, Generating create(Anew[:total_size]) [if not already present]
+         Generating copy(A[:total_size]) [if not already present]
+     56, Generating present(output[:1],input[:1])
+         Generating Tesla code
+         64, #pragma acc loop gang, vector tile(4,32) /* blockIdx.x threadIdx.x */
+         65,   /* blockIdx.x threadIdx.x tiled */
+     82, Generating present(output[:1],input[:1])
+         Generating Tesla code
+         87, #pragma acc loop gang, vector(128) collapse(2) /* blockIdx.x threadIdx.x */
+             Generating reduction(max:error)
+         88,   /* blockIdx.x threadIdx.x collapsed */
+     82, Generating implicit copy(error) [if not already present]
+    108, Generating present(output[:1],input[:1])
+         Generating Tesla code
+        110, #pragma acc loop gang, vector(128) collapse(2) /* blockIdx.x threadIdx.x */
+        111,   /* blockIdx.x threadIdx.x collapsed */
+Warning: LBR backtrace method is not supported on this platform. DWARF backtrace method will be used.
+Collecting data...
+Processing events...
+Saving temporary "/tmp/nsys-report-b16f-c0d3-9426-a1c3.qdstrm" file to disk...
+
+Creating final output files...
+Processing [0%                                                                ]Processing [======14%                                                         ]Processing [===============28%                                                ]Processing [=============================49%                                  ]Processing [=============================================74%                  ]Processing [==============================================75%                 ]Processing [===============================================76%                ]Processing [=================================================79%              ]Processing [=================================================80%              ]Processing [===================================================83%            ]Processing [===========================================================95%    ]Processing [==============================================================100%]
+Saved report file to "/tmp/nsys-report-b16f-c0d3-9426-a1c3.qdrep"
+Exporting 2454 events: [1%                                                    ]Exporting 2454 events: [2%                                                    ]Exporting 2454 events: [3%                                                    ]Exporting 2454 events: [4%                                                    ]Exporting 2454 events: [5%                                                    ]Exporting 2454 events: [=6%                                                   ]Exporting 2454 events: [=7%                                                   ]Exporting 2454 events: [==8%                                                  ]Exporting 2454 events: [==9%                                                  ]Exporting 2454 events: [==10%                                                 ]Exporting 2454 events: [==11%                                                 ]Exporting 2454 events: [===12%                                                ]Exporting 2454 events: [====13%                                               ]Exporting 2454 events: [====14%                                               ]Exporting 2454 events: [=====15%                                              ]Exporting 2454 events: [=====16%                                              ]Exporting 2454 events: [======17%                                             ]Exporting 2454 events: [======18%                                             ]Exporting 2454 events: [=======19%                                            ]Exporting 2454 events: [=======20%                                            ]Exporting 2454 events: [========21%                                           ]Exporting 2454 events: [========22%                                           ]Exporting 2454 events: [=========23%                                          ]Exporting 2454 events: [=========24%                                          ]Exporting 2454 events: [==========25%                                         ]Exporting 2454 events: [===========26%                                        ]Exporting 2454 events: [===========27%                                        ]Exporting 2454 events: [============28%                                       ]Exporting 2454 events: [============29%                                       ]Exporting 2454 events: [=============30%                                      ]Exporting 2454 events: [=============31%                                      ]Exporting 2454 events: [==============32%                                     ]Exporting 2454 events: [==============33%                                     ]Exporting 2454 events: [===============34%                                    ]Exporting 2454 events: [===============35%                                    ]Exporting 2454 events: [================36%                                   ]Exporting 2454 events: [================37%                                   ]Exporting 2454 events: [=================38%                                  ]Exporting 2454 events: [==================39%                                 ]Exporting 2454 events: [==================40%                                 ]Exporting 2454 events: [===================41%                                ]Exporting 2454 events: [===================42%                                ]Exporting 2454 events: [====================43%                               ]Exporting 2454 events: [====================44%                               ]Exporting 2454 events: [=====================45%                              ]Exporting 2454 events: [=====================46%                              ]Exporting 2454 events: [======================47%                             ]Exporting 2454 events: [======================48%                             ]Exporting 2454 events: [=======================49%                            ]Exporting 2454 events: [========================50%                           ]Exporting 2454 events: [========================51%                           ]Exporting 2454 events: [=========================52%                          ]Exporting 2454 events: [=========================53%                          ]Exporting 2454 events: [==========================54%                         ]Exporting 2454 events: [==========================55%                         ]Exporting 2454 events: [===========================56%                        ]Exporting 2454 events: [===========================57%                        ]Exporting 2454 events: [============================58%                       ]Exporting 2454 events: [============================59%                       ]Exporting 2454 events: [=============================60%                      ]Exporting 2454 events: [=============================61%                      ]Exporting 2454 events: [==============================62%                     ]Exporting 2454 events: [===============================63%                    ]Exporting 2454 events: [===============================64%                    ]Exporting 2454 events: [================================65%                   ]Exporting 2454 events: [================================66%                   ]Exporting 2454 events: [=================================67%                  ]Exporting 2454 events: [=================================68%                  ]Exporting 2454 events: [==================================69%                 ]Exporting 2454 events: [==================================70%                 ]Exporting 2454 events: [===================================71%                ]Exporting 2454 events: [===================================72%                ]Exporting 2454 events: [====================================73%               ]Exporting 2454 events: [====================================74%               ]Exporting 2454 events: [=====================================75%              ]Exporting 2454 events: [======================================76%             ]Exporting 2454 events: [======================================77%             ]Exporting 2454 events: [=======================================78%            ]Exporting 2454 events: [=======================================79%            ]Exporting 2454 events: [========================================80%           ]Exporting 2454 events: [========================================81%           ]Exporting 2454 events: [=========================================82%          ]Exporting 2454 events: [=========================================83%          ]Exporting 2454 events: [==========================================84%         ]Exporting 2454 events: [==========================================85%         ]Exporting 2454 events: [===========================================86%        ]Exporting 2454 events: [===========================================87%        ]Exporting 2454 events: [============================================88%       ]Exporting 2454 events: [=============================================89%      ]Exporting 2454 events: [=============================================90%      ]Exporting 2454 events: [==============================================91%     ]Exporting 2454 events: [==============================================92%     ]Exporting 2454 events: [===============================================93%    ]Exporting 2454 events: [===============================================94%    ]Exporting 2454 events: [================================================95%   ]Exporting 2454 events: [================================================96%   ]Exporting 2454 events: [=================================================97%  ]Exporting 2454 events: [=================================================98%  ]Exporting 2454 events: [==================================================99% ]Exporting 2454 events: [==================================================100%]
+
+Exported successfully to
+/tmp/nsys-report-b16f-c0d3-9426-a1c3.sqlite
+Report file moved to "/home/master/ppm/ppm-43/Parallel Programming/08_GPU_OpenACC/results/profile_full_cuda-ext.q_111153.qdrep"
+Report file moved to "/home/master/ppm/ppm-43/Parallel Programming/08_GPU_OpenACC/results/profile_full_cuda-ext.q_111153.sqlite"
+

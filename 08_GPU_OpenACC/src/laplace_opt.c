@@ -3,26 +3,30 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// Optimized Laplace Solver (OpenACC)
-// Techniques:
-// 1. Pointer Swapping: Eliminates the expensive data copy kernel.
-// 2. Loop Collapse: Maximizes GPU thread occupancy (16M threads).
-// 3. Data Residency: Data stays on GPU memory for the entire loop.
+// FINAL OPTIMIZED LAPLACE SOLVER
+// Techniques used:
+// 1. Dynamic 1D Memory: Runtime sizing + Coalesced Memory Access.
+// 2. Pointer Swapping: Eliminates the expensive data copy kernel (O(N) savings).
+// 3. Periodic Reduction: Checks error only every 100 iterations to hide CPU-GPU sync latency.
+// 4. Collapse(2): Maximizes thread occupancy to hide memory latency.
 
 int main(int argc, char** argv)
 {
     // --- 1. Setup ---
     int n = 4096;
     int m = 4096;
-    int iter_max = 100;
+    int iter_max = 1000;
     
+    // Parse command line arguments for runtime flexibility
     if (argc > 1) n = atoi(argv[1]);
     if (argc > 2) m = atoi(argv[2]);
     if (argc > 3) iter_max = atoi(argv[3]);
 
     size_t total_size = (size_t)n * m;
     
-    // Allocate Host Memory (restrict helps compiler optimizations)
+    // Allocate Host Memory
+    // 'restrict' keyword promises the compiler that these pointers do not overlap,
+    // enabling more aggressive optimization.
     float * restrict A    = (float*) malloc(total_size * sizeof(float));
     float * restrict Anew = (float*) malloc(total_size * sizeof(float));
 
@@ -31,20 +35,22 @@ int main(int argc, char** argv)
     const float pi = 2.0f * asinf(1.0f);
 
     // --- 2. Initialization ---
+    // Initialize array with 0.0
     memset(A, 0, total_size * sizeof(float));
     
-    // Set Boundary Conditions
+    // Boundary Conditions: Top and Bottom rows
     for (int i = 0; i < m; i++) {
         A[i] = 0.f;              
         A[(n-1)*m + i] = 0.f;    
     }
+    // Boundary Conditions: Left and Right columns
     for (int j = 0; j < n; j++) {
         float val = sinf(pi * j / (n-1));
         A[j*m] = val;            
         A[j*m + m - 1] = val * expf(-pi); 
     }
     
-    // Singular point
+    // Singular point initialization
     A[(n/128)*m + m/128] = 1.0f;
 
     printf("Jacobi relaxation: %d x %d mesh, max %d iterations\n", n, m, iter_max);
@@ -52,22 +58,20 @@ int main(int argc, char** argv)
     // --- 3. GPU Execution ---
     int iter = 0;
     
-    // Pointers for "Ping-Pong" buffering
+    // Pointers for "Ping-Pong" buffering (swapping instead of copying)
     float *input = A;
     float *output = Anew;
 
-    // DATA REGION:
-    // We map the memory of 'A' and 'Anew' to the device once.
-    // 'present' inside the loop will lookup these addresses.
+    // DATA REGION
+    // We copy 'A' in, create space for 'Anew', and keep data on GPU for the whole loop.
     #pragma acc data copy(A[0:total_size]) create(Anew[0:total_size])
     {
         while (error > tol && iter < iter_max)
         {
-            error = 0.f;
-
             // KERNEL 1: Stencil Computation
-            // Reads from 'input', Writes to 'output'
-            // collapse(2) creates a massive 1D grid of threads
+            // 'collapse(2)' flattens the loop into a 1D grid of 16 million threads.
+            // This ensures maximum occupancy (active warps) to hide memory latency.
+            // 'async(1)' allows the CPU to proceed without waiting for the GPU.
             #pragma acc parallel loop collapse(2) present(input, output) async(1)
             for (int j = 1; j < n - 1; j++) {
                 for (int i = 1; i < m - 1; i++) {
@@ -81,37 +85,38 @@ int main(int argc, char** argv)
             }
 
             // KERNEL 2: Error Reduction
-            // Reads both arrays. 'async(1)' allows it to queue after Kernel 1.
-            // Note: This forces a synchronization on the host to read 'error' back.
-            #pragma acc parallel loop collapse(2) reduction(max:error) present(input, output) async(1)
-            for (int j = 1; j < n - 1; j++) {
-                for (int i = 1; i < m - 1; i++) {
-                    float diff = fabsf(output[j*m + i] - input[j*m + i]);
-                    error = fmaxf(error, sqrtf(diff));
+            // Optimization: Only check error every 100 iterations.
+            // This eliminates 99% of the CPU-GPU synchronization overhead.
+            if (iter % 100 == 0 || iter == iter_max - 1) 
+            {
+                error = 0.f; 
+                
+                #pragma acc parallel loop collapse(2) reduction(max:error) present(input, output) async(1)
+                for (int j = 1; j < n - 1; j++) {
+                    for (int i = 1; i < m - 1; i++) {
+                        float diff = fabsf(output[j*m + i] - input[j*m + i]);
+                        error = fmaxf(error, sqrtf(diff));
+                    }
                 }
+                // We must wait here to read the error value on the host
+                #pragma acc wait(1) 
+                
+                if (iter % (iter_max/10) == 0) printf("%5d, %0.6f\n", iter, error);
             }
-            
-            // Wait for GPU to finish this step before checking error on CPU
-            #pragma acc wait(1)
 
             // OPTIMIZATION: Pointer Swap (Ping-Pong)
-            // Instead of copying data back (O(N)), we just swap pointers (O(1)).
+            // Swap pointers on CPU. Next iteration reads from 'output' and writes to 'input'.
             float *temp = input;
             input = output;
             output = temp;
 
             iter++;
-            if (iter % (iter_max/10) == 0) printf("%5d, %0.6f\n", iter, error);
         }
 
         // --- 4. Final Data Handling ---
-        // Since we swapped pointers, the final result might be in 'Anew' (buffer 2).
-        // If 'input' is currently pointing to 'Anew', we must copy it back to 'A'
-        // so the 'acc data copyout(A)' works correctly.
-        
+        // If the final valid data is in 'input' (which effectively points to Anew's buffer),
+        // we must copy it to 'output' (A's buffer) so the implicit copyout works correctly.
         if (input != A) {
-            // The valid data is in 'input' (which is Anew's buffer).
-            // We copy it to 'output' (which is A's buffer).
             #pragma acc parallel loop collapse(2) present(input, output)
             for (int j = 1; j < n - 1; j++) {
                  for (int i = 1; i < m - 1; i++) {
@@ -119,8 +124,7 @@ int main(int argc, char** argv)
                  }
             }
         }
-
-    } // End acc data (Implicit copyout of A)
+    } // End data region (Implicit copyout of A)
 
     printf("Total Iterations: %5d, ERROR: %0.6f, ", iter, error);
     printf("A[%d][%d]= %0.6f\n", n/128, m/128, A[(n/128)*m + m/128]);

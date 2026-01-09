@@ -1,0 +1,32 @@
+#!/bin/bash
+#SBATCH --job-name=viz_timeline
+#SBATCH --partition=cuda-ext.q
+#SBATCH --time=00:05:00
+#SBATCH --output=../results/log/viz_%j.log
+#SBATCH --error=../results/err/viz_%j.err
+
+if [[ "$SLURM_SUBMIT_DIR" != "" ]]; then
+    cd "${SLURM_SUBMIT_DIR}"
+fi
+
+mkdir -p "../results/plots"
+
+# Point to files in the new profiling folder
+BASE_SQLITE="../results/profiling/profile_full_cuda-ext.q_111151.sqlite"
+OPT_SQLITE="../results/profiling/profile_full_cuda-ext.q_111154.sqlite"
+
+# Validate existence
+if [ ! -f "$BASE_SQLITE" ]; then
+    echo "❌ Error: Baseline SQLite not found ($BASE_SQLITE)"
+    exit 1
+fi
+
+echo "Generating smart timeline..."
+module load python/3.x 2>/dev/null || true
+
+# Try running; if numpy is missing, this might fail on strict nodes
+python3 plot_timeline.py "$BASE_SQLITE" "$OPT_SQLITE"
+
+if [ -f "../results/plots/timeline_comparison.png" ]; then
+    echo "✅ Success! Timeline saved."
+fi
