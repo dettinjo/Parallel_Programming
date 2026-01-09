@@ -1,130 +1,114 @@
 #!/bin/bash
 
-# --- SLURM Configuration (Aolin Cluster) ---
-#SBATCH --job-name=lap_opt
-#SBATCH --output=laplace_run_%j.log
-#SBATCH --error=laplace_run_%j.err
+#SBATCH --job-name=lap_full
+#SBATCH --output=lap_full_%j.log
+#SBATCH --error=lap_full_%j.err
 #SBATCH --partition=cuda-ext.q
 #SBATCH --gres=gpu:1
 #SBATCH --exclusive
-#SBATCH --time=00:15:00
+#SBATCH --time=00:20:00
 
-# --- Intelligent Path Setup ---
-# This block detects where the script is launched from and sets the root accordingly.
+# --- 1. Path Setup ---
 if [[ "$SLURM_SUBMIT_DIR" == *"scripts" ]]; then
-    # Launched from scripts/ -> Root is one level up
     PROJECT_ROOT="$(dirname "${SLURM_SUBMIT_DIR}")"
-    SCRIPT_REL_PATH="." # We are inside scripts
-    # Redirect logs from current dir (scripts) to proper results dir
-    # Note: SLURM creates logs before script runs, so we move them later.
 else
-    # Launched from project root -> Root is current dir
     PROJECT_ROOT="${SLURM_SUBMIT_DIR}"
-    SCRIPT_REL_PATH="./scripts"
 fi
 
-# --- File Paths ---
 SRC_DIR="${PROJECT_ROOT}/src"
 RESULTS_DIR="${PROJECT_ROOT}/results"
 LOG_DIR="${RESULTS_DIR}/log"
 ERR_DIR="${RESULTS_DIR}/err"
 CSV_DIR="${RESULTS_DIR}/csv"
 
-# Source Files
-SRC_BASE="${SRC_DIR}/laplace_baseline.c"
-SRC_OPT="${SRC_DIR}/laplace_opt.c"
-
-# Binaries (Stored in src for cleanliness)
-BIN_BASE="${SRC_DIR}/laplace_baseline_bin"
-BIN_OPT="${SRC_DIR}/laplace_opt_bin"
-
-# Output Data
-CSV_FILE="${CSV_DIR}/laplace_timings_${SLURM_JOB_ID}.csv"
-PROFILE_OUT="${RESULTS_DIR}/profile_laplace_${SLURM_JOB_ID}"
-
-# --- Setup Directories ---
 mkdir -p "${LOG_DIR}" "${ERR_DIR}" "${CSV_DIR}"
 
-# --- Header ---
-echo "--- SLURM JOB ${SLURM_JOB_ID} ---"
-echo "Launch Dir:   ${SLURM_SUBMIT_DIR}"
-echo "Project Root: ${PROJECT_ROOT}"
-echo "Running on:   $(hostname)"
-echo "Partition:    cuda-int.q"
+# --- 2. Configuration & Naming ---
+JOB_ID=${SLURM_JOB_ID}
+JOB_NAME=${SLURM_JOB_NAME}
+PARTITION=${SLURM_JOB_PARTITION}
 
-# --- Load Environment ---
+CSV_FILE="${CSV_DIR}/timings_full_${PARTITION}_${JOB_ID}.csv"
+PROFILE_OUT="${RESULTS_DIR}/profile_full_${PARTITION}_${JOB_ID}"
+BIN_BASE="${SRC_DIR}/laplace_base_${JOB_ID}"
+BIN_OPT="${SRC_DIR}/laplace_opt_${JOB_ID}"
+
+# --- 3. Automatic Cleanup Function ---
+# This runs automatically when the script exits (success or failure)
+cleanup() {
+    echo "--- Cleaning up ---"
+    rm -f "${BIN_BASE}" "${BIN_OPT}"
+    
+    # Allow logs to close
+    sleep 2 
+    
+    # Move logs to results folder
+    echo "Moving logs to ${RESULTS_DIR}..."
+    mv "${SLURM_SUBMIT_DIR}/${JOB_NAME}_${JOB_ID}.log" "${LOG_DIR}/${JOB_NAME}_${PARTITION}_${JOB_ID}.log" 2>/dev/null
+    mv "${SLURM_SUBMIT_DIR}/${JOB_NAME}_${JOB_ID}.err" "${ERR_DIR}/${JOB_NAME}_${PARTITION}_${JOB_ID}.err" 2>/dev/null
+}
+trap cleanup EXIT
+
+# --- 4. System Info ---
+echo "=== GPU BENCHMARK STARTED (${JOB_ID}) ==="
+echo "Node:      $(hostname)"
+echo "GPU Info:"
+nvidia-smi --query-gpu=name,compute_cap,memory.total --format=csv,noheader
+
+# --- 5. Compilation ---
 module purge
 module add nvhpc/21.2
-export CUDA_VISIBLE_DEVICES=0
 
-echo "--- GPU Info ---"
-nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
+# FLAGS EXPLANATION:
+# cc60 = Pascal (GTX 1080 Ti)
+# cc70 = Volta (V100 - just in case)
+# cc75 = Turing (RTX 2070)
+# cc80 = Ampere (A100 / RTX 3080 compatibility mode)
+FLAGS="-fast -acc=gpu -gpu=cc60,cc70,cc75,cc80 -Minfo=accel"
 
-# --- Compilation ---
-echo ""
-echo "--- Compiling ---"
+echo -e "\n--- Compiling (Flags: ${FLAGS}) ---"
 
-# 1. Compile Baseline (Static 4096)
-echo "Compiling Baseline..."
-nvc -fast -acc=gpu -gpu=cc80 -Minfo=accel "${SRC_BASE}" -o "${BIN_BASE}"
-if [ $? -ne 0 ]; then echo "Baseline compilation FAILED."; exit 1; fi
+# Compile Baseline
+nvc ${FLAGS} "${SRC_DIR}/laplace_baseline.c" -o "${BIN_BASE}"
+if [ $? -ne 0 ]; then echo "❌ Baseline Compile Failed"; exit 1; fi
 
-# 2. Compile Optimized (Dynamic)
-echo "Compiling Optimized..."
-nvc -fast -acc=gpu -gpu=cc80 -Minfo=accel "${SRC_OPT}" -o "${BIN_OPT}"
-if [ $? -ne 0 ]; then echo "Optimized compilation FAILED."; exit 1; fi
+# Compile Optimized
+nvc ${FLAGS} "${SRC_DIR}/laplace_opt.c" -o "${BIN_OPT}"
+if [ $? -ne 0 ]; then echo "❌ Optimized Compile Failed"; exit 1; fi
 
-# --- Run & Benchmark ---
-TEST_SIZE=4096
-ITERATIONS=10000
+# --- 6. Execution ---
+N=4096
+M=4096
+ITER=10000
 
-echo ""
-echo "--- Running Benchmark (${TEST_SIZE}x${TEST_SIZE}, ${ITERATIONS} iters) ---"
-
-# Initialize CSV
+echo -e "\n--- Running Benchmark (${N}x${M}, ${ITER} iters) ---"
 echo "type,size,iterations,time_seconds,speedup" > "${CSV_FILE}"
 
-# 1. Run Baseline
-echo "Running Baseline..."
+# Run Baseline
+echo "1. Baseline..."
 START=$(date +%s.%N)
-${BIN_BASE} > /dev/null
+"${BIN_BASE}" ${ITER} > /dev/null
 END=$(date +%s.%N)
-BASE_TIME=$(echo "$END - $START" | bc)
-printf "Baseline Time: %.4f s\n" "${BASE_TIME}"
-echo "baseline,${TEST_SIZE},${ITERATIONS},${BASE_TIME},1.00" >> "${CSV_FILE}"
+TIME_BASE=$(echo "$END - $START" | bc)
+printf "   Time: %.4f s\n" "${TIME_BASE}"
+echo "baseline,${N},${ITER},${TIME_BASE},1.00" >> "${CSV_FILE}"
 
-# 2. Run Optimized
-echo "Running Optimized..."
+# Run Optimized
+echo "2. Optimized..."
 START=$(date +%s.%N)
-${BIN_OPT} ${TEST_SIZE} ${TEST_SIZE} ${ITERATIONS} > /dev/null
+"${BIN_OPT}" ${N} ${M} ${ITER} > /dev/null
 END=$(date +%s.%N)
-OPT_TIME=$(echo "$END - $START" | bc)
-printf "Optimized Time: %.4f s\n" "${OPT_TIME}"
+TIME_OPT=$(echo "$END - $START" | bc)
+printf "   Time: %.4f s\n" "${TIME_OPT}"
 
-# 3. Calculate Speedup
-if (( $(echo "$OPT_TIME > 0" | bc -l) )); then
-    SPEEDUP=$(echo "$BASE_TIME / $OPT_TIME" | bc -l)
-else
-    SPEEDUP="Err"
-fi
-printf "Speedup: %.2fx\n" "${SPEEDUP}"
-echo "optimized,${TEST_SIZE},${ITERATIONS},${OPT_TIME},${SPEEDUP}" >> "${CSV_FILE}"
+# Calculate Speedup
+SPEEDUP=$(echo "$TIME_BASE / $TIME_OPT" | bc -l)
+printf "   Speedup: %.2fx\n" "${SPEEDUP}"
+echo "optimized,${N},${ITER},${TIME_OPT},${SPEEDUP}" >> "${CSV_FILE}"
 
-# --- Profiling ---
-echo ""
-echo "--- Profiling (Short Run: 100 iters) ---"
+# --- 7. Profiling ---
+echo -e "\n--- Profiling (Short Run: 100 iters) ---"
 nsys profile --trace=cuda,openacc --stats=true --force-overwrite true -o "${PROFILE_OUT}" \
-    ${BIN_OPT} ${TEST_SIZE} ${TEST_SIZE} 100
+    "${BIN_OPT}" ${N} ${M} 100
 
-echo "Profile saved to: ${PROFILE_OUT}.qdrep"
-
-# --- Cleanup ---
-rm -f "${BIN_BASE}" "${BIN_OPT}"
-
-# Move the SLURM logs to the correct folder (since they default to submission dir)
-# We wait 1 sec to ensure file handles are closed
-sleep 1
-mv "${SLURM_SUBMIT_DIR}/laplace_run_${SLURM_JOB_ID}.log" "${LOG_DIR}/" 2>/dev/null
-mv "${SLURM_SUBMIT_DIR}/laplace_run_${SLURM_JOB_ID}.err" "${ERR_DIR}/" 2>/dev/null
-
-echo "--- Experiment Complete ---"
+echo "✅ Benchmark Complete."

@@ -1,0 +1,59 @@
+#!/bin/bash
+
+#SBATCH --job-name=probe_sys
+#SBATCH --output=probe_sys_%j.log
+#SBATCH --error=probe_sys_%j.err
+#SBATCH --partition=nodo.q
+#SBATCH --exclusive
+#SBATCH --time=00:02:00
+
+# --- Path Setup ---
+if [[ "$SLURM_SUBMIT_DIR" == *"scripts" ]]; then
+    PROJECT_ROOT="$(dirname "${SLURM_SUBMIT_DIR}")"
+else
+    PROJECT_ROOT="${SLURM_SUBMIT_DIR}"
+fi
+
+RESULTS_DIR="${PROJECT_ROOT}/results"
+LOG_DIR="${RESULTS_DIR}/log"
+ERR_DIR="${RESULTS_DIR}/err"
+TXT_DIR="${RESULTS_DIR}/txt"
+
+# Create new txt directory
+mkdir -p "${LOG_DIR}" "${ERR_DIR}" "${TXT_DIR}"
+
+# --- Configuration ---
+PARTITION=${SLURM_JOB_PARTITION}
+# Save as .txt in results/txt/
+INFO_FILE="${TXT_DIR}/cluster_info_${PARTITION}_${SLURM_JOB_ID}.txt"
+
+{
+    echo "=== CLUSTER PROBE REPORT (${SLURM_JOB_ID}) ==="
+    echo "Partition: ${PARTITION}"
+    echo "Node: $(hostname)"
+    echo "Date: $(date)"
+    
+    echo -e "\n[PARTITIONS]"
+    sinfo -o "%20P %10a %15l %15g %C %N"
+    
+    echo -e "\n[CPU]"
+    lscpu
+    
+    echo -e "\n[GPU]"
+    if command -v nvidia-smi &> /dev/null; then
+        nvidia-smi --query-gpu=name,compute_cap,memory.total,driver_version --format=csv
+    else
+        echo "No nvidia-smi found"
+    fi
+    
+    echo -e "\n[MODULES]"
+    module purge
+    module avail nvhpc 2>&1
+} > "${INFO_FILE}"
+
+sleep 2
+# Move logs to results/log
+mv "${SLURM_SUBMIT_DIR}/${SLURM_JOB_NAME}_${SLURM_JOB_ID}.log" "${LOG_DIR}/${SLURM_JOB_NAME}_${PARTITION}_${SLURM_JOB_ID}.log" 2>/dev/null
+mv "${SLURM_SUBMIT_DIR}/${SLURM_JOB_NAME}_${SLURM_JOB_ID}.err" "${ERR_DIR}/${SLURM_JOB_NAME}_${PARTITION}_${SLURM_JOB_ID}.err" 2>/dev/null
+
+echo "✅ Probe complete. Info saved to: ${INFO_FILE}"
