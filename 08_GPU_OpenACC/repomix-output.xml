@@ -1,0 +1,848 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+results/
+  csv/
+    laplace_timings_108502.csv
+  err/
+    laplace_run_108502.err
+scripts/
+  plot_results.py
+  probe_gpu.slurm
+  run_full.job
+src/
+  laplace_baseline.c
+  laplace_opt.c
+templates/
+  compileGPU.sh
+  GPUInfo.sh
+  lap.c
+  laplace.c
+  laplace2.c
+  perfGPU.sh
+  profGPU.sh
+  runGPU.sh
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="results/csv/laplace_timings_108502.csv">
+type,size,iterations,time_seconds,speedup
+baseline,4096,10000,.004705000,1.00
+optimized,4096,10000,.003838608,1.22570473463297111869
+</file>
+
+<file path="results/err/laplace_run_108502.err">
+"/home/master/ppm/ppm-43/Parallel Programming/08_GPU_Laplace/src/laplace_baseline.c", line 76: warning: last line of file ends without a newline
+  }
+   ^
+
+main:
+     49, Generating copy(A[:][:]) [if not already present]
+         Generating create(Anew[:][:]) [if not already present]
+     54, Loop is parallelizable
+     55, Loop is parallelizable
+         Generating Tesla code
+         54, #pragma acc loop gang, vector(128) collapse(2) /* blockIdx.x threadIdx.x collapsed-innermost */
+         55,   /* blockIdx.x threadIdx.x auto-collapsed */
+     59, Loop is parallelizable
+         Generating implicit copy(error) [if not already present]
+     60, Loop is parallelizable
+         Generating Tesla code
+         59, #pragma acc loop gang, vector(128) collapse(2) /* blockIdx.x threadIdx.x collapsed-innermost */
+             Generating implicit reduction(max:error)
+         60,   /* blockIdx.x threadIdx.x auto-collapsed */
+     64, Loop is parallelizable
+     65, Loop is parallelizable
+         Generating Tesla code
+         64, #pragma acc loop gang, vector(128) collapse(2) /* blockIdx.x threadIdx.x collapsed-innermost */
+         65,   /* blockIdx.x threadIdx.x auto-collapsed */
+"/home/master/ppm/ppm-43/Parallel Programming/08_GPU_Laplace/src/laplace_opt.c", line 88: warning: last line of file ends without a newline
+  }
+   ^
+
+/var/spool/slurmd/job108502/slurm_script: line 90: /home/master/ppm/ppm-43/Parallel: Is a directory
+/var/spool/slurmd/job108502/slurm_script: line 99: /home/master/ppm/ppm-43/Parallel: Is a directory
+Warning: LBR backtrace method is not supported on this platform. DWARF backtrace method will be used.
+No such file or directory: /home/master/ppm/ppm-43/Parallel
+</file>
+
+<file path="scripts/plot_results.py">
+import matplotlib.pyplot as plt
+import csv
+import sys
+
+# Usage: python plot_results.py <path_to_csv_data>
+# You will need to manually create a data.csv from your log files 
+# format: Implementation,Time_Seconds
+
+def plot_performance(data_file):
+    labels = []
+    times = []
+    
+    try:
+        with open(data_file, 'r') as f:
+            reader = csv.reader(f)
+            next(reader) # Skip header
+            for row in reader:
+                labels.append(row[0])
+                times.append(float(row[1]))
+    except Exception as e:
+        print(f"Error reading file: {e}")
+        return
+
+    plt.figure(figsize=(10, 6))
+    bars = plt.bar(labels, times, color=['gray', 'green', 'blue'])
+    
+    plt.ylabel('Execution Time (s)')
+    plt.title('Laplace Solver Performance (4096^2, 10k iter)')
+    
+    # Add value labels
+    for bar in bars:
+        yval = bar.get_height()
+        plt.text(bar.get_x() + bar.get_width()/2, yval, round(yval, 2), va='bottom', ha='center')
+
+    plt.savefig('../results/plots/performance_comparison.png')
+    print("Plot saved to results/plots/performance_comparison.png")
+
+if __name__ == "__main__":
+    if len(sys.argv) > 1:
+        plot_performance(sys.argv[1])
+    else:
+        print("Please provide a CSV file path.")
+</file>
+
+<file path="scripts/probe_gpu.slurm">
+#!/bin/bash
+#SBATCH --job-name=gpu_probe
+#SBATCH --output=../results/probe_%j.out
+#SBATCH --error=../results/probe_%j.err
+#SBATCH --time=00:01:00
+
+# We will use an array job to test different partitions manually 
+# or just submit this script multiple times with different --partition arguments.
+
+echo "========================================"
+echo "Node: $(hostname)"
+echo "Partition: $SLURM_JOB_PARTITION"
+echo "========================================"
+
+# 1. Check for Hardware
+if command -v nvidia-smi &> /dev/null; then
+    echo "SUCCESS: NVIDIA-SMI found!"
+    nvidia-smi --query-gpu=name,memory.total --format=csv
+else
+    echo "FAILURE: No nvidia-smi found."
+fi
+
+# 2. Check for Compiler Module
+module purge
+if module load nvhpc/21.2 2>/dev/null; then
+    echo "SUCCESS: nvhpc/21.2 module loaded."
+else
+    echo "FAILURE: nvhpc/21.2 module NOT found."
+    echo "Available modules:"
+    module avail 2>&1 | grep nv
+fi
+echo "========================================"
+</file>
+
+<file path="scripts/run_full.job">
+#!/bin/bash
+
+# --- SLURM Configuration (Aolin Cluster) ---
+#SBATCH --job-name=lap_opt
+#SBATCH --output=laplace_run_%j.log
+#SBATCH --error=laplace_run_%j.err
+#SBATCH --partition=cuda-ext.q
+#SBATCH --gres=gpu:1
+#SBATCH --exclusive
+#SBATCH --time=00:15:00
+
+# --- Intelligent Path Setup ---
+# This block detects where the script is launched from and sets the root accordingly.
+if [[ "$SLURM_SUBMIT_DIR" == *"scripts" ]]; then
+    # Launched from scripts/ -> Root is one level up
+    PROJECT_ROOT="$(dirname "${SLURM_SUBMIT_DIR}")"
+    SCRIPT_REL_PATH="." # We are inside scripts
+    # Redirect logs from current dir (scripts) to proper results dir
+    # Note: SLURM creates logs before script runs, so we move them later.
+else
+    # Launched from project root -> Root is current dir
+    PROJECT_ROOT="${SLURM_SUBMIT_DIR}"
+    SCRIPT_REL_PATH="./scripts"
+fi
+
+# --- File Paths ---
+SRC_DIR="${PROJECT_ROOT}/src"
+RESULTS_DIR="${PROJECT_ROOT}/results"
+LOG_DIR="${RESULTS_DIR}/log"
+ERR_DIR="${RESULTS_DIR}/err"
+CSV_DIR="${RESULTS_DIR}/csv"
+
+# Source Files
+SRC_BASE="${SRC_DIR}/laplace_baseline.c"
+SRC_OPT="${SRC_DIR}/laplace_opt.c"
+
+# Binaries (Stored in src for cleanliness)
+BIN_BASE="${SRC_DIR}/laplace_baseline_bin"
+BIN_OPT="${SRC_DIR}/laplace_opt_bin"
+
+# Output Data
+CSV_FILE="${CSV_DIR}/laplace_timings_${SLURM_JOB_ID}.csv"
+PROFILE_OUT="${RESULTS_DIR}/profile_laplace_${SLURM_JOB_ID}"
+
+# --- Setup Directories ---
+mkdir -p "${LOG_DIR}" "${ERR_DIR}" "${CSV_DIR}"
+
+# --- Header ---
+echo "--- SLURM JOB ${SLURM_JOB_ID} ---"
+echo "Launch Dir:   ${SLURM_SUBMIT_DIR}"
+echo "Project Root: ${PROJECT_ROOT}"
+echo "Running on:   $(hostname)"
+echo "Partition:    cuda-int.q"
+
+# --- Load Environment ---
+module purge
+module add nvhpc/21.2
+export CUDA_VISIBLE_DEVICES=0
+
+echo "--- GPU Info ---"
+nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
+
+# --- Compilation ---
+echo ""
+echo "--- Compiling ---"
+
+# 1. Compile Baseline (Static 4096)
+echo "Compiling Baseline..."
+nvc -fast -acc=gpu -gpu=cc80 -Minfo=accel "${SRC_BASE}" -o "${BIN_BASE}"
+if [ $? -ne 0 ]; then echo "Baseline compilation FAILED."; exit 1; fi
+
+# 2. Compile Optimized (Dynamic)
+echo "Compiling Optimized..."
+nvc -fast -acc=gpu -gpu=cc80 -Minfo=accel "${SRC_OPT}" -o "${BIN_OPT}"
+if [ $? -ne 0 ]; then echo "Optimized compilation FAILED."; exit 1; fi
+
+# --- Run & Benchmark ---
+TEST_SIZE=4096
+ITERATIONS=10000
+
+echo ""
+echo "--- Running Benchmark (${TEST_SIZE}x${TEST_SIZE}, ${ITERATIONS} iters) ---"
+
+# Initialize CSV
+echo "type,size,iterations,time_seconds,speedup" > "${CSV_FILE}"
+
+# 1. Run Baseline
+echo "Running Baseline..."
+START=$(date +%s.%N)
+${BIN_BASE} > /dev/null
+END=$(date +%s.%N)
+BASE_TIME=$(echo "$END - $START" | bc)
+printf "Baseline Time: %.4f s\n" "${BASE_TIME}"
+echo "baseline,${TEST_SIZE},${ITERATIONS},${BASE_TIME},1.00" >> "${CSV_FILE}"
+
+# 2. Run Optimized
+echo "Running Optimized..."
+START=$(date +%s.%N)
+${BIN_OPT} ${TEST_SIZE} ${TEST_SIZE} ${ITERATIONS} > /dev/null
+END=$(date +%s.%N)
+OPT_TIME=$(echo "$END - $START" | bc)
+printf "Optimized Time: %.4f s\n" "${OPT_TIME}"
+
+# 3. Calculate Speedup
+if (( $(echo "$OPT_TIME > 0" | bc -l) )); then
+    SPEEDUP=$(echo "$BASE_TIME / $OPT_TIME" | bc -l)
+else
+    SPEEDUP="Err"
+fi
+printf "Speedup: %.2fx\n" "${SPEEDUP}"
+echo "optimized,${TEST_SIZE},${ITERATIONS},${OPT_TIME},${SPEEDUP}" >> "${CSV_FILE}"
+
+# --- Profiling ---
+echo ""
+echo "--- Profiling (Short Run: 100 iters) ---"
+nsys profile --trace=cuda,openacc --stats=true --force-overwrite true -o "${PROFILE_OUT}" \
+    ${BIN_OPT} ${TEST_SIZE} ${TEST_SIZE} 100
+
+echo "Profile saved to: ${PROFILE_OUT}.qdrep"
+
+# --- Cleanup ---
+rm -f "${BIN_BASE}" "${BIN_OPT}"
+
+# Move the SLURM logs to the correct folder (since they default to submission dir)
+# We wait 1 sec to ensure file handles are closed
+sleep 1
+mv "${SLURM_SUBMIT_DIR}/laplace_run_${SLURM_JOB_ID}.log" "${LOG_DIR}/" 2>/dev/null
+mv "${SLURM_SUBMIT_DIR}/laplace_run_${SLURM_JOB_ID}.err" "${ERR_DIR}/" 2>/dev/null
+
+echo "--- Experiment Complete ---"
+</file>
+
+<file path="src/laplace_baseline.c">
+#include <math.h>
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#define n 4096
+#define m 4096
+
+float A[n][m];
+float Anew[n][m];
+float y[n];
+
+int main(int argc, char** argv)
+{
+    int i, j;
+    int iter_max = 100;
+    
+    const float pi  = 2.0f * asinf(1.0f);
+    const float tol = 1.0e-8f;
+    float error= 1.0f;    
+
+    if (argc>1) {  iter_max = atoi(argv[1]); }
+
+    memset(A, 0, n * m * sizeof(float));
+    
+    for (i=0; i < m; i++)
+    {
+       A[0][i]   = 0.f;
+       A[n-1][i] = 0.f;
+    }
+
+    for (j=0; j < n; j++)
+    {
+       y[j] = sinf(pi * j / (n-1));
+       A[j][0] = y[j];
+       A[j][m-1] = y[j]*expf(-pi);
+    }
+
+    A[n/128][m/128] = 1.0f; 
+
+    printf("Jacobi relaxation Calculation: %d x %d mesh, maximum of %d iterations\n", 
+           n, m, iter_max );
+
+    int iter = 0;
+
+    // BASELINE STRATEGY: 
+    // Data is moved to GPU once. Computation happens in 'kernels' regions.
+    #pragma acc data copy(A) create(Anew)
+    while ( error > tol && iter < iter_max )
+    {
+       error = 0.f;
+
+       #pragma acc kernels
+       for( i=1; i < m-1; i++ )
+          for( j=1; j < n-1; j++)
+              Anew[j][i] = ( A[j][i+1]+A[j][i-1]+A[j-1][i]+A[j+1][i]) / 4.0f;
+
+       #pragma acc kernels
+       for( i=1; i < m-1; i++ )
+          for( j=1; j < n-1; j++)
+              error = fmaxf( error, sqrtf( fabsf( A[j][i] - Anew[j][i] )));
+
+       #pragma acc kernels
+       for( i=1; i < m-1; i++ )
+          for( j=1; j < n-1; j++)
+              A[j][i] = Anew[j][i];
+
+       iter++;
+       if (iter % (iter_max/10) == 0) printf("%5d, %0.6f\n", iter, error);
+    }
+
+    printf("Total Iterations: %5d, ERROR: %0.6f, ", iter, error);
+    printf("A[%d][%d]= %0.6f\n", n/128, m/128, A[n/128][m/128]);
+
+    return 0;
+}
+</file>
+
+<file path="src/laplace_opt.c">
+#include <math.h>
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+float stencil ( float v1, float v2, float v3, float v4 )
+{
+  return (v1 + v2 + v3 + v4) / 4;
+}
+
+void laplace_step ( float *in, float *out, int n, int m )
+{
+  int i, j;
+  for ( i=1; i < m-1; i++ )
+    for ( j=1; j < n-1; j++ )
+      out[j*m+i]= stencil(in[j*m+i+1], in[j*m+i-1], in[(j-1)*m+i], in[(j+1)*m+i]);
+}
+
+float laplace_error ( float *old, float *new, int n, int m )
+{
+  int i, j;
+  float error=0.0f;
+  for ( i=1; i < m-1; i++ )
+    for ( j=1; j < n-1; j++ )
+      error = fmaxf( error, sqrtf( fabsf( old[j*m+i] - new[j*m+i] )));
+  return error;
+}
+
+void laplace_copy ( float *in, float *out, int n, int m )
+{
+  int i, j;
+  for ( i=1; i < m-1; i++ )
+    for ( j=1; j < n-1; j++ )
+      out[j*m+i]= in[j*m+i];
+}
+
+void laplace_init ( float *in, int n, int m )
+{
+  int i, j;
+  const float pi  = 2.0f * asinf(1.0f);
+  memset(in, 0, n*m*sizeof(float));
+  for (i=0; i<m; i++)  in[    i    ] = 0.f;
+  for (i=0; i<m; i++)  in[(n-1)*m+i] = 0.f;
+  for (j=0; j<n; j++)  in[   j*m   ] = sinf(pi*j / (n-1));
+  for (j=0; j<n; j++)  in[ j*m+m-1 ] = sinf(pi*j / (n-1))*expf(-pi);
+}
+
+int main(int argc, char** argv)
+{
+  int n = 4096, m = 4096;
+  int iter_max = 100;
+  float *A, *Anew;
+    
+  const float tol = 1.0e-8f;
+  float error= 1.0f;    
+
+  if (argc>1) {  n        = atoi(argv[1]); }
+  if (argc>2) {  m        = atoi(argv[2]); }
+  if (argc>3) {  iter_max = atoi(argv[3]); }
+
+  A = (float *)malloc(n*m*sizeof(float));
+  Anew = (float *)malloc(n*m*sizeof(float));
+
+  laplace_init (A, n, m);
+  A[(n/128)*m+m/128] = 1.0f; 
+
+  printf("Jacobi relaxation Calculation: %d x %d mesh, maximum of %d iterations\n", 
+         n, m, iter_max );
+
+  int iter = 0;
+
+  while ( error > tol && iter < iter_max )
+  {
+    iter++;
+    laplace_step (A, Anew, n, m);
+    error = laplace_error (A, Anew, n, m);
+    laplace_copy (Anew, A, n, m);
+
+    if (iter % (iter_max/10) == 0) printf("%5d, %0.6f\n", iter, error);
+  }
+
+  printf("Total Iterations: %5d, ERROR: %0.6f, ", iter, error);
+  printf("A[%d][%d]= %0.6f\n", n/128, m/128, A[(n/128)*m+m/128]);
+
+  free(A);
+  free(Anew);
+  return 0;
+}
+</file>
+
+<file path="templates/compileGPU.sh">
+#!/bin/bash -l
+#SBATCH --exclusive
+#SBATCH -t 1
+
+# echo name of host processor (for documentation)
+echo "Run on computer:"
+hostname
+echo
+
+# next variable indicates GPU device number 
+export CUDA_VISIBLE_DEVICES=0
+
+# install CUDA profiling utilities
+module add nvhpc/21.2
+
+echo "Compiling "$1" for GPU compute capability "$2" as file "$3
+nvc -fast -acc -gpu=$2 -Minfo=accel $1 -o $3
+</file>
+
+<file path="templates/GPUInfo.sh">
+#!/bin/bash -l
+
+# no need to claim computer in exclusive mode
+
+echo "GPU info for following computer node"
+hostname
+echo
+
+# install NVIDIA tools
+module add nvhpc/21.2
+
+# list GPU (accelerator) info
+export CUDA_VISIBLE_DEVICES=0,1
+nvaccelinfo
+echo
+
+# list GPU device info (CUDA utility)
+nvidia-smi
+
+echo
+echo
+echo "CPU info for the computer node"
+echo
+nvc -V
+echo
+lscpu
+echo
+lspci
+</file>
+
+<file path="templates/lap.c">
+#include <math.h>
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+float stencil ( float v1, float v2, float v3, float v4 )
+{
+  return (v1 + v2 + v3 + v4) / 4;
+}
+
+void laplace_step ( float *in, float *out, int n, int m )
+{
+  int i, j;
+  for ( i=1; i < m-1; i++ )
+    for ( j=1; j < n-1; j++ )
+      out[j*m+i]= stencil(in[j*m+i+1], in[j*m+i-1], in[(j-1)*m+i], in[(j+1)*m+i]);
+}
+
+float laplace_error ( float *old, float *new, int n, int m )
+{
+  int i, j;
+  float error=0.0f;
+  for ( i=1; i < m-1; i++ )
+    for ( j=1; j < n-1; j++ )
+      error = fmaxf( error, sqrtf( fabsf( old[j*m+i] - new[j*m+i] )));
+  return error;
+}
+
+void laplace_copy ( float *in, float *out, int n, int m )
+{
+  int i, j;
+  for ( i=1; i < m-1; i++ )
+    for ( j=1; j < n-1; j++ )
+      out[j*m+i]= in[j*m+i];
+}
+
+
+void laplace_init ( float *in, int n, int m )
+{
+  int i, j;
+  const float pi  = 2.0f * asinf(1.0f);
+  memset(in, 0, n*m*sizeof(float));
+  for (i=0; i<m; i++)  in[    i    ] = 0.f;
+  for (i=0; i<m; i++)  in[(n-1)*m+i] = 0.f;
+  for (j=0; j<n; j++)  in[   j*m   ] = sinf(pi*j / (n-1));
+  for (j=0; j<n; j++)  in[ j*m+m-1 ] = sinf(pi*j / (n-1))*expf(-pi);
+}
+
+int main(int argc, char** argv)
+{
+  int n = 4096, m = 4096;
+  int iter_max = 100;
+  float *A, *Anew;
+    
+  const float tol = 1.0e-8f;
+  float error= 1.0f;    
+
+  // get runtime arguments: n, m and iter_max 
+  if (argc>1) {  n        = atoi(argv[1]); }
+  if (argc>2) {  m        = atoi(argv[2]); }
+  if (argc>3) {  iter_max = atoi(argv[3]); }
+
+  A    = (float*) malloc( n*m*sizeof(float) );
+  Anew = (float*) malloc( n*m*sizeof(float) );
+
+  //  set boundary conditions
+  laplace_init (A, n, m);
+  A[(n/128)*m+m/128] = 1.0f; // set singular point
+
+  printf("Jacobi relaxation Calculation: %d x %d mesh,"
+         " maximum of %d iterations\n", 
+         n, m, iter_max );
+
+  int iter = 0;
+  while ( error > tol && iter < iter_max )
+  {
+    iter++;
+    laplace_step (A, Anew, n, m);
+    error= laplace_error (A, Anew, n, m);
+    laplace_copy (Anew, A, n, m);
+    if (iter % (iter_max/10) == 0) printf("%5d, %0.6f\n", iter, error);
+  }
+  printf("Total Iterations: %5d, ERROR: %0.6f, ", iter, error);
+  printf("A[%d][%d]= %0.6f\n", n/128, m/128, A[(n/128)*m+m/128]);
+
+  free(A); 
+  free(Anew);
+}
+</file>
+
+<file path="templates/laplace.c">
+#include <math.h>
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#define n 4096
+#define m 4096
+
+float A[n][m];
+float Anew[n][m];
+float y[n];
+
+int main(int argc, char** argv)
+{
+    int i, j;
+    int iter_max = 100;
+    
+    const float pi  = 2.0f * asinf(1.0f);
+    const float tol = 1.0e-8f;
+    float error= 1.0f;    
+
+    // get value of iter_max provided from command line at execution time
+    if (argc>1) {  iter_max = atoi(argv[1]); }
+
+    // set all values in matrix as zero
+    memset(A, 0, n * m * sizeof(float));
+    
+    //  set boundary conditions: top and bottom rows
+    for (i=0; i < m; i++)
+    {
+       A[0][i]   = 0.f;
+       A[n-1][i] = 0.f;
+    }
+
+    //  set boundary conditions: left and right columns
+    for (j=0; j < n; j++)
+    {
+       y[j] = sinf(pi * j / (n-1));
+       A[j][0] = y[j];
+       A[j][m-1] = y[j]*expf(-pi);
+    }
+
+    A[n/128][m/128] = 1.0f; // set singular point
+
+    printf("Jacobi relaxation Calculation: %d x %d mesh, maximum of %d iterations\n", 
+           n, m, iter_max );
+
+    int iter = 0;
+
+    while ( error > tol && iter < iter_max )
+    {
+       #pragma acc kernels
+       for( i=1; i < m-1; i++ )
+          for( j=1; j < n-1; j++)
+              Anew[j][i] = ( A[j][i+1]+A[j][i-1]+A[j-1][i]+A[j+1][i]) / 4;
+
+       error = 0.f;
+       #pragma acc kernels
+       for( i=1; i < m-1; i++ )
+          for( j=1; j < n-1; j++)
+              error = fmaxf( error, sqrtf( fabsf( Anew[j][i]-A[j][i] ) ) );
+
+       #pragma acc kernels
+       for( i=1; i < m-1; i++ )
+          for( j=1; j < n-1; j++)
+               A[j][i] = Anew[j][i];
+
+       iter++;
+       if( iter % (iter_max/10) == 0 ) printf("%5d, %0.6f\n", iter, error);
+    }
+    printf("Total Iterations: %5d, ERROR: %0.6f, ", iter, error);
+    printf("A[%d][%d]= %0.6f\n", n/128, m/128, A[n/128][m/128]);
+
+    return 0;
+}
+</file>
+
+<file path="templates/laplace2.c">
+#include <math.h>
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#define n 4096
+#define m 4096
+
+float A[n][m];
+float Anew[n][m];
+float y[n];
+
+int main(int argc, char** argv)
+{
+    int i, j;
+    int iter_max = 100;
+    
+    const float pi  = 2.0f * asinf(1.0f);
+    const float tol = 1.0e-8f;
+    float error= 1.0f;    
+
+    // get value of iter_max provided from command line at execution time
+    if (argc>1) {  iter_max = atoi(argv[1]); }
+
+    // set all values in matrix as zero
+    memset(A, 0, n * m * sizeof(float));
+    
+    //  set boundary conditions: top and bottom rows
+    for (i=0; i < m; i++)
+    {
+       A[0][i]   = 0.f;
+       A[n-1][i] = 0.f;
+    }
+
+    //  set boundary conditions: left and right columns
+    for (j=0; j < n; j++)
+    {
+       y[j] = sinf(pi * j / (n-1));
+       A[j][0] = y[j];
+       A[j][m-1] = y[j]*expf(-pi);
+    }
+
+    A[n/128][m/128] = 1.0f; // set singular point
+
+    printf("Jacobi relaxation Calculation: %d x %d mesh, maximum of %d iterations\n", 
+           n, m, iter_max );
+
+    int iter = 0;
+
+    #pragma acc data copy(A) create(Anew)
+    while ( error > tol && iter < iter_max )
+    {
+       #pragma acc kernels
+       for( i=1; i < m-1; i++ )
+          for( j=1; j < n-1; j++)
+              Anew[j][i] = ( A[j][i+1]+A[j][i-1]+A[j-1][i]+A[j+1][i]) / 4;
+
+       error = 0.f;
+       #pragma acc kernels
+       for( i=1; i < m-1; i++ )
+          for( j=1; j < n-1; j++)
+              error = fmaxf( error, sqrtf( fabsf( Anew[j][i]-A[j][i] ) ) );
+
+       #pragma acc kernels
+       for( i=1; i < m-1; i++ )
+          for( j=1; j < n-1; j++)
+               A[j][i] = Anew[j][i];
+
+       iter++;
+       if( iter % (iter_max/10) == 0 ) printf("%5d, %0.6f\n", iter, error);
+    }
+    printf("Total Iterations: %5d, ERROR: %0.6f, ", iter, error);
+    printf("A[%d][%d]= %0.6f\n", n/128, m/128, A[n/128][m/128]);
+
+    return 0;
+}
+</file>
+
+<file path="templates/perfGPU.sh">
+#!/bin/bash -l
+#SBATCH --exclusive
+#SBATCH -t 1
+
+# IMPORTANT: execute with exclusive ownership of node
+
+# echo name of host processor (for documentation)
+echo "Run on computer:"
+hostname
+echo
+
+# next variable indicates GPU device number 
+export CUDA_VISIBLE_DEVICES=0
+
+echo "Performance Analysis: ncu nvprof"
+ncu -c3 -k $1 $2 $3 $4 $5 $6
+</file>
+
+<file path="templates/profGPU.sh">
+#!/bin/bash -l
+#SBATCH --exclusive
+#SBATCH -t 1
+
+# IMPORTANT: execute with exclusive ownership of node
+
+# echo name of host processor (for documentation)
+echo "Run on computer:"
+hostname
+echo
+
+# next variable indicates GPU device number 
+export CUDA_VISIBLE_DEVICES=0
+
+echo "Profile program: nsys nvprof"
+nsys nvprof --print-gpu-trace $1 $2 $3 $4
+</file>
+
+<file path="templates/runGPU.sh">
+#!/bin/bash -l
+#SBATCH --exclusive
+#SBATCH -t 1
+
+# IMPORTANT: execute with exclusive ownership of node
+
+# echo name of host processor (for documentation)
+echo "Run on computer:"
+hostname
+echo
+
+# next variable indicates GPU device number 
+export CUDA_VISIBLE_DEVICES=0
+
+perf stat $1 $2 $3 $4
+</file>
+
+</files>

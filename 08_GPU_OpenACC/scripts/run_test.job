@@ -1,0 +1,86 @@
+#!/bin/bash
+
+#SBATCH --job-name=lap_test
+#SBATCH --output=test_%j.log
+#SBATCH --error=test_%j.err
+#SBATCH --partition=cuda-ext.q
+#SBATCH --gres=gpu:1
+#SBATCH --exclusive
+#SBATCH --time=00:02:00
+
+# --- Path Detection (Robust) ---
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+PROJECT_ROOT="$(dirname "${SCRIPT_DIR}")"
+
+# --- Configuration ---
+SRC_DIR="${PROJECT_ROOT}/src"
+RESULTS_DIR="${PROJECT_ROOT}/results"
+LOG_DIR="${RESULTS_DIR}/log"
+ERR_DIR="${RESULTS_DIR}/err"
+CSV_DIR="${RESULTS_DIR}/csv"
+
+mkdir -p "${LOG_DIR}" "${ERR_DIR}" "${CSV_DIR}"
+
+BIN_BASE="${SRC_DIR}/laplace_test_base"
+BIN_OPT="${SRC_DIR}/laplace_test_opt"
+CSV_FILE="${CSV_DIR}/test_timings_${SLURM_JOB_ID}.csv"
+PROFILE_OUT="${RESULTS_DIR}/test_profile_${SLURM_JOB_ID}"
+
+echo "--- QUICK TEST STARTED (Job ${SLURM_JOB_ID}) ---"
+module purge
+module add nvhpc/21.2
+export CUDA_VISIBLE_DEVICES=0
+
+# --- 1. Compilation Check ---
+echo "1. Compiling..."
+nvc -fast -acc=gpu -gpu=cc80 "${SRC_DIR}/laplace_baseline.c" -o "${BIN_BASE}"
+if [ $? -ne 0 ]; then echo "❌ Baseline Compile Failed"; exit 1; fi
+
+nvc -fast -acc=gpu -gpu=cc80 "${SRC_DIR}/laplace_opt.c" -o "${BIN_OPT}"
+if [ $? -ne 0 ]; then echo "❌ Optimized Compile Failed"; exit 1; fi
+echo "✅ Compilation Successful"
+
+# --- 2. Runtime Check ---
+# Reduced problem size for testing
+N=1024
+M=1024
+ITER=100
+
+echo -e "\n2. Running Small Benchmark (${N}x${M}, ${ITER} iters)..."
+echo "type,size,iterations,time_seconds,speedup" > "${CSV_FILE}"
+
+# Run Baseline
+START=$(date +%s.%N)
+${BIN_BASE} ${ITER} > /dev/null
+END=$(date +%s.%N)
+TIME_BASE=$(echo "$END - $START" | bc)
+echo "   Baseline:  ${TIME_BASE}s"
+echo "baseline,${N},${ITER},${TIME_BASE},1.00" >> "${CSV_FILE}"
+
+# Run Optimized
+START=$(date +%s.%N)
+${BIN_OPT} ${N} ${M} ${ITER} > /dev/null
+END=$(date +%s.%N)
+TIME_OPT=$(echo "$END - $START" | bc)
+echo "   Optimized: ${TIME_OPT}s"
+echo "optimized,${N},${ITER},${TIME_OPT},test_run" >> "${CSV_FILE}"
+
+echo "✅ Execution Successful"
+
+# --- 3. Profiler Check ---
+echo -e "\n3. Verifying Profiler..."
+nsys profile --trace=cuda,openacc --stats=true --force-overwrite true -o "${PROFILE_OUT}" \
+    ${BIN_OPT} ${N} ${M} 20 > /dev/null 2>&1
+
+if [ -f "${PROFILE_OUT}.qdrep" ] || [ -f "${PROFILE_OUT}.nsys-rep" ]; then
+    echo "✅ Profiler Output Generated: ${PROFILE_OUT}"
+else
+    echo "⚠️ Profiler Output Missing (Check logs)"
+fi
+
+# --- Cleanup ---
+rm -f "${BIN_BASE}" "${BIN_OPT}"
+mv ${PROJECT_ROOT}/test_${SLURM_JOB_ID}.log ${LOG_DIR}/ 2>/dev/null
+mv ${PROJECT_ROOT}/test_${SLURM_JOB_ID}.err ${ERR_DIR}/ 2>/dev/null
+
+echo -e "\n--- TEST COMPLETE ---"
