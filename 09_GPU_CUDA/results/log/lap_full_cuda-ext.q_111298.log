@@ -1,0 +1,74 @@
+=== GPU BENCHMARK STARTED (111298) ===
+Node:      aolin-gpu-1.uab.cat
+GPU Info:
+NVIDIA GeForce RTX 2070, 7.5, 8192 MiB
+NVIDIA GeForce GTX 1080 Ti, 6.1, 11264 MiB
+
+--- Compiling (Flags: -fast -acc=gpu -gpu=cc60,cc70,cc75,cc80 -Minfo=accel) ---
+
+--- Running Benchmark (4096x4096, 10000 iters) ---
+1. Baseline...
+   Time: 0,0000 s
+2. CUDA...
+   Time: 0,0000 s
+   Speedup: 0,00x
+
+--- Profiling (Short Run: 100 iters) ---
+Jacobi relaxation Calculation: 4096 x 4096 mesh, maximum of 100 iterations. Threads per block= 16
+Grid: 256x256, Block: 16x16
+   10, 0.246094
+   20, 0.176197
+   30, 0.144464
+   40, 0.125371
+   50, 0.112275
+   60, 0.102578
+   70, 0.095025
+   80, 0.088928
+   90, 0.083871
+  100, 0.079589
+Total Iterations:   100, ERROR: 0.079589, A[32][32]= 0.006334
+
+
+CUDA API Statistics:
+
+ Time(%)  Total Time (ns)  Num Calls    Average      Minimum     Maximum          Name       
+ -------  ---------------  ---------  ------------  ---------  -----------  -----------------
+    79,0      363.483.852          4  90.870.963,0      7.006  363.143.379  cudaMalloc       
+    20,0       93.765.587         12   7.813.798,0  4.863.336   21.783.715  cudaMemcpy       
+     0,0        1.368.477        100      13.684,0      7.650      404.594  cudaLaunchKernel 
+     0,0          611.688          4     152.922,0     13.782      312.877  cudaFree         
+     0,0           97.211         10       9.721,0      8.252       19.550  cudaMemset       
+     0,0           58.228          2      29.114,0      6.386       51.842  cudaStreamCreate 
+     0,0           17.314          2       8.657,0      3.562       13.752  cudaStreamDestroy
+
+
+
+CUDA Kernel Statistics:
+
+ Time(%)  Total Time (ns)  Instances   Average   Minimum  Maximum                           Name                          
+ -------  ---------------  ---------  ---------  -------  -------  -------------------------------------------------------
+   100,0       53.357.273        100  533.572,0  522.753  541.697  dev_laplace_error_opt(float*, float*, float*, int, int)
+
+
+
+CUDA Memory Operation Statistics (by time):
+
+ Time(%)  Total Time (ns)  Operations    Average      Minimum     Maximum        Operation     
+ -------  ---------------  ----------  ------------  ----------  ----------  ------------------
+    52,0       21.195.237          11   1.926.839,0       1.184  21.182.564  [CUDA memcpy DtoH]
+    47,0       19.496.801           1  19.496.801,0  19.496.801  19.496.801  [CUDA memcpy HtoD]
+     0,0           15.616          10       1.561,0       1.376       1.760  [CUDA memset]     
+
+
+
+CUDA Memory Operation Statistics (by size in KiB):
+
+   Total     Operations   Average     Minimum     Maximum        Operation     
+ ----------  ----------  ----------  ----------  ----------  ------------------
+ 65.536,000          11   5.957,000       0,000  65.536,000  [CUDA memcpy DtoH]
+ 65.536,000           1  65.536,000  65.536,000  65.536,000  [CUDA memcpy HtoD]
+      0,000          10       0,000       0,000       0,000  [CUDA memset]     
+
+✅ Benchmark Complete.
+--- Cleaning up ---
+Moving logs to /home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/results...

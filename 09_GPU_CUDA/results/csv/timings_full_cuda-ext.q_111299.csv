@@ -1,0 +1,3 @@
+type,size,iterations,time_seconds,speedup
+baseline,4096,10000,12.276293253,1.00
+cuda,4096,10000,4.592579699,2.67307135805897312093
