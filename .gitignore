@@ -1,3 +1,4 @@
 .DS_Store
 repomix-output.xml
-.vscode
+.vscode/settings.json
+.vscode/
