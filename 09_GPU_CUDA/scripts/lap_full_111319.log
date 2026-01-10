@@ -1,0 +1,10 @@
+=== GPU BENCHMARK STARTED (111319) ===
+Node:      aolin-gpu-1.uab.cat
+GPU Info:
+NVIDIA GeForce RTX 2070, 7.5, 8192 MiB
+NVIDIA GeForce GTX 1080 Ti, 6.1, 11264 MiB
+
+--- Compiling (Flags: -fast -acc=gpu -gpu=cc60,cc70,cc75,cc80 -Minfo=accel) ---
+
+--- Running Benchmark (4096x4096, 10000 iters) ---
+1. Baseline...

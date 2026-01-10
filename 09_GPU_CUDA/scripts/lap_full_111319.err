@@ -1,0 +1,24 @@
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_baseline.c", line 76: warning: last line of file ends without a newline
+  }
+   ^
+
+main:
+     49, Generating copy(A[:][:]) [if not already present]
+         Generating create(Anew[:][:]) [if not already present]
+     54, Loop is parallelizable
+     55, Loop is parallelizable
+         Generating Tesla code
+         54, #pragma acc loop gang, vector(128) collapse(2) /* blockIdx.x threadIdx.x collapsed-innermost */
+         55,   /* blockIdx.x threadIdx.x auto-collapsed */
+     59, Loop is parallelizable
+         Generating implicit copy(error) [if not already present]
+     60, Loop is parallelizable
+         Generating Tesla code
+         59, #pragma acc loop gang, vector(128) collapse(2) /* blockIdx.x threadIdx.x collapsed-innermost */
+             Generating implicit reduction(max:error)
+         60,   /* blockIdx.x threadIdx.x auto-collapsed */
+     64, Loop is parallelizable
+     65, Loop is parallelizable
+         Generating Tesla code
+         64, #pragma acc loop gang, vector(128) collapse(2) /* blockIdx.x threadIdx.x collapsed-innermost */
+         65,   /* blockIdx.x threadIdx.x auto-collapsed */
