@@ -1,0 +1,281 @@
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_baseline.c", line 76: warning: last line of file ends without a newline
+  }
+   ^
+
+main:
+     49, Generating copy(A[:][:]) [if not already present]
+         Generating create(Anew[:][:]) [if not already present]
+     54, Loop is parallelizable
+     55, Loop is parallelizable
+         Generating Tesla code
+         54, #pragma acc loop gang, vector(128) collapse(2) /* blockIdx.x threadIdx.x collapsed-innermost */
+         55,   /* blockIdx.x threadIdx.x auto-collapsed */
+     59, Loop is parallelizable
+         Generating implicit copy(error) [if not already present]
+     60, Loop is parallelizable
+         Generating Tesla code
+         59, #pragma acc loop gang, vector(128) collapse(2) /* blockIdx.x threadIdx.x collapsed-innermost */
+             Generating implicit reduction(max:error)
+         60,   /* blockIdx.x threadIdx.x auto-collapsed */
+     64, Loop is parallelizable
+     65, Loop is parallelizable
+         Generating Tesla code
+         64, #pragma acc loop gang, vector(128) collapse(2) /* blockIdx.x threadIdx.x collapsed-innermost */
+         65,   /* blockIdx.x threadIdx.x auto-collapsed */
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 8: warning: inline specifier allowed on function declarations only
+  static inline __device__ float atomicMax(float *addr, float val) {
+         ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 8: warning: explicit type is missing ("int" assumed)
+  static inline __device__ float atomicMax(float *addr, float val) {
+                ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 8: error: expected a ";"
+  static inline __device__ float atomicMax(float *addr, float val) {
+                           ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 80: warning: parsing restarts here after previous syntax error
+           n, m, iter_max, THREADS_BLOCK);
+                                         ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 84: error: expected a type specifier
+    cudaMalloc(&A_dev, n * m * sizeof(float));
+               ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 84: error: identifier "n" is undefined
+    cudaMalloc(&A_dev, n * m * sizeof(float));
+                       ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 84: error: expected a ")"
+    cudaMalloc(&A_dev, n * m * sizeof(float));
+                             ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 84: warning: this declaration has no storage class or type specifier
+    cudaMalloc(&A_dev, n * m * sizeof(float));
+    ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 85: error: expected a type specifier
+    cudaMalloc(&Anew_dev, n * m * sizeof(float));
+               ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 85: error: identifier "n" is undefined
+    cudaMalloc(&Anew_dev, n * m * sizeof(float));
+                          ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 85: error: expected a ")"
+    cudaMalloc(&Anew_dev, n * m * sizeof(float));
+                                ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 85: warning: this declaration has no storage class or type specifier
+    cudaMalloc(&Anew_dev, n * m * sizeof(float));
+    ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 86: error: expected a type specifier
+    cudaMalloc(&error_dev, sizeof(float));
+               ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 86: error: expected a type specifier
+    cudaMalloc(&error_dev, sizeof(float));
+                           ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 86: warning: this declaration has no storage class or type specifier
+    cudaMalloc(&error_dev, sizeof(float));
+    ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 89: error: expected a ")"
+    cudaMemcpy(A_dev, A, n * m * sizeof(float), cudaMemcpyHostToDevice);
+                           ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 89: warning: this declaration has no storage class or type specifier
+    cudaMemcpy(A_dev, A, n * m * sizeof(float), cudaMemcpyHostToDevice);
+    ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 89: warning: identifier-list parameters may only be used in a function definition
+    cudaMemcpy(A_dev, A, n * m * sizeof(float), cudaMemcpyHostToDevice);
+    ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 90: error: expected a ")"
+    cudaMemcpy(Anew_dev, A, n * m * sizeof(float), cudaMemcpyHostToDevice);
+                              ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 90: warning: this declaration has no storage class or type specifier
+    cudaMemcpy(Anew_dev, A, n * m * sizeof(float), cudaMemcpyHostToDevice);
+    ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 90: warning: identifier-list parameters may only be used in a function definition
+    cudaMemcpy(Anew_dev, A, n * m * sizeof(float), cudaMemcpyHostToDevice);
+    ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 94: error: identifier "n" is undefined
+    int n_matrix_to_compute = n - 2;
+                              ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 95: error: identifier "m" is undefined
+    int m_matrix_to_compute = m - 2;
+                              ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 97: error: identifier "dim3" is undefined
+    dim3 gridDim((m_matrix_to_compute + THREADS_BLOCK - 1) / THREADS_BLOCK,
+    ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 97: error: expected a type specifier
+    dim3 gridDim((m_matrix_to_compute + THREADS_BLOCK - 1) / THREADS_BLOCK,
+                 ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 98: error: expected a type specifier
+                 (n_matrix_to_compute + THREADS_BLOCK - 1) / THREADS_BLOCK);
+                 ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 99: error: identifier "dim3" is undefined
+    dim3 blockDim(THREADS_BLOCK, THREADS_BLOCK);
+    ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 99: warning: identifier-list parameters may only be used in a function definition
+    dim3 blockDim(THREADS_BLOCK, THREADS_BLOCK);
+         ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 101: error: expected a type specifier
+    printf("Grid dimensions: %d x %d, Block dimensions: %d x %d\n",
+           ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 102: error: function "gridDim" is not a type name
+           gridDim.x, gridDim.y, blockDim.x, blockDim.y);
+           ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 102: error: expected a ")"
+           gridDim.x, gridDim.y, blockDim.x, blockDim.y);
+                  ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 101: warning: this declaration has no storage class or type specifier
+    printf("Grid dimensions: %d x %d, Block dimensions: %d x %d\n",
+    ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 101: error: declaration is incompatible with "int printf(const char *__restrict__, ...)" (declared at line 332 of "/usr/include/stdio.h")
+    printf("Grid dimensions: %d x %d, Block dimensions: %d x %d\n",
+    ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 105: error: expected a declaration
+    while (error > tol && iter < iter_max) {
+    ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 126: warning: parsing restarts here after previous syntax error
+      A_dev = Anew_dev;
+                      ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 127: warning: this declaration has no storage class or type specifier
+      Anew_dev = swap;
+      ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 127: error: declaration is incompatible with "float *Anew_dev" (declared at line 83)
+      Anew_dev = swap;
+      ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 127: error: identifier "swap" is undefined
+      Anew_dev = swap;
+                 ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 130: error: expected a declaration
+      if (iter % (iter_max / 10) == 0 || iter == 1)
+      ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 132: error: expected a declaration
+    }
+    ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 135: warning: parsing restarts here after previous syntax error
+    cudaMemcpy(A, A_dev, n * m * sizeof(float), cudaMemcpyDeviceToHost);
+                                                                       ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 137: error: expected a type specifier
+    printf("Total Iterations: %5d, ERROR: %0.6f, ", iter, error);
+           ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 137: error: variable "iter" is not a type name
+    printf("Total Iterations: %5d, ERROR: %0.6f, ", iter, error);
+                                                    ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 137: error: identifier "error" is undefined
+    printf("Total Iterations: %5d, ERROR: %0.6f, ", iter, error);
+                                                          ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 137: warning: this declaration has no storage class or type specifier
+    printf("Total Iterations: %5d, ERROR: %0.6f, ", iter, error);
+    ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 137: error: declaration is incompatible with "int printf(<error-type>, <error-type>)" (declared at line 101)
+    printf("Total Iterations: %5d, ERROR: %0.6f, ", iter, error);
+    ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 138: error: expected a type specifier
+    printf("A[%d][%d]= %0.6f\n", n / 128, m / 128, A[(n / 128) * m + m / 128]);
+           ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 138: error: "n" is not a type name
+    printf("A[%d][%d]= %0.6f\n", n / 128, m / 128, A[(n / 128) * m + m / 128]);
+                                 ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 138: error: expected a ")"
+    printf("A[%d][%d]= %0.6f\n", n / 128, m / 128, A[(n / 128) * m + m / 128]);
+                                   ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 138: warning: this declaration has no storage class or type specifier
+    printf("A[%d][%d]= %0.6f\n", n / 128, m / 128, A[(n / 128) * m + m / 128]);
+    ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 138: error: declaration is incompatible with "int printf(<error-type>, <error-type>, <error-type>)" (declared at line 137)
+    printf("A[%d][%d]= %0.6f\n", n / 128, m / 128, A[(n / 128) * m + m / 128]);
+    ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 141: warning: this declaration has no storage class or type specifier
+    cudaFree(A_dev);
+    ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 141: warning: identifier-list parameters may only be used in a function definition
+    cudaFree(A_dev);
+    ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 142: warning: this declaration has no storage class or type specifier
+    cudaFree(Anew_dev);
+    ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 142: warning: identifier-list parameters may only be used in a function definition
+    cudaFree(Anew_dev);
+    ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 143: warning: this declaration has no storage class or type specifier
+    cudaFree(error_dev);
+    ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 143: warning: identifier-list parameters may only be used in a function definition
+    cudaFree(error_dev);
+    ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 144: warning: this declaration has no storage class or type specifier
+    free(A);
+    ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 144: warning: identifier-list parameters may only be used in a function definition
+    free(A);
+    ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 144: error: declaration is incompatible with "void free(void *)" (declared at line 563 of "/usr/include/stdlib.h")
+    free(A);
+    ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 146: error: expected a declaration
+    return 0;
+    ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 147: warning: last line of file ends without a newline
+  }
+   ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 147: error: expected a declaration
+  }
+  ^
+
+"/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c", line 8: warning: variable "__device__" was declared but never referenced
+  static inline __device__ float atomicMax(float *addr, float val) {
+                ^
+
+37 errors detected in the compilation of "/home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src/laplace_opt.c".

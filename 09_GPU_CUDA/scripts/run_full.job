@@ -31,13 +31,13 @@ PARTITION=${SLURM_JOB_PARTITION}
 CSV_FILE="${CSV_DIR}/timings_full_${PARTITION}_${JOB_ID}.csv"
 PROFILE_OUT="${RESULTS_DIR}/profile_full_${PARTITION}_${JOB_ID}"
 BIN_BASE="${SRC_DIR}/laplace_base_${JOB_ID}"
-BIN_OPT="${SRC_DIR}/laplace_opt_${JOB_ID}"
+BIN_CUDA="${SRC_DIR}/laplace_cuda_${JOB_ID}"
 
 # --- 3. Automatic Cleanup Function ---
 # This runs automatically when the script exits (success or failure)
 cleanup() {
     echo "--- Cleaning up ---"
-    rm -f "${BIN_BASE}" "${BIN_OPT}"
+    rm -f "${BIN_BASE}" "${BIN_CUDA}"
     
     # Allow logs to close
     sleep 2 
@@ -72,9 +72,10 @@ echo -e "\n--- Compiling (Flags: ${FLAGS}) ---"
 nvc ${FLAGS} "${SRC_DIR}/laplace_baseline.c" -o "${BIN_BASE}"
 if [ $? -ne 0 ]; then echo "❌ Baseline Compile Failed"; exit 1; fi
 
-# Compile Optimized
-nvc ${FLAGS} "${SRC_DIR}/laplace_opt.c" -o "${BIN_OPT}"
-if [ $? -ne 0 ]; then echo "❌ Optimized Compile Failed"; exit 1; fi
+# Compile CUDA version
+nvcc -O3 "${SRC_DIR}/laplace_cuda.cu" -o "${SRC_DIR}/laplace_cuda_${JOB_ID}"
+if [ $? -ne 0 ]; then echo "❌ CUDA Compile Failed"; exit 1; fi
+BIN_CUDA="${SRC_DIR}/laplace_cuda_${JOB_ID}"
 
 # --- 6. Execution ---
 N=4096
@@ -93,22 +94,22 @@ TIME_BASE=$(echo "$END - $START" | bc)
 printf "   Time: %.4f s\n" "${TIME_BASE}"
 echo "baseline,${N},${ITER},${TIME_BASE},1.00" >> "${CSV_FILE}"
 
-# Run Optimized
-echo "2. Optimized..."
+# Run CUDA
+echo "2. CUDA..."
 START=$(date +%s.%N)
-"${BIN_OPT}" ${N} ${M} ${ITER} > /dev/null
+"${BIN_CUDA}" ${N} ${M} ${ITER} > /dev/null
 END=$(date +%s.%N)
-TIME_OPT=$(echo "$END - $START" | bc)
-printf "   Time: %.4f s\n" "${TIME_OPT}"
+TIME_CUDA=$(echo "$END - $START" | bc)
+printf "   Time: %.4f s\n" "${TIME_CUDA}"
 
-# Calculate Speedup
-SPEEDUP=$(echo "$TIME_BASE / $TIME_OPT" | bc -l)
-printf "   Speedup: %.2fx\n" "${SPEEDUP}"
-echo "optimized,${N},${ITER},${TIME_OPT},${SPEEDUP}" >> "${CSV_FILE}"
+# Calculate Speedup vs Baseline
+SPEEDUP_CUDA=$(echo "$TIME_BASE / $TIME_CUDA" | bc -l)
+printf "   Speedup: %.2fx\n" "${SPEEDUP_CUDA}"
+echo "cuda,${N},${ITER},${TIME_CUDA},${SPEEDUP_CUDA}" >> "${CSV_FILE}"
 
 # --- 7. Profiling ---
 echo -e "\n--- Profiling (Short Run: 100 iters) ---"
 nsys profile --trace=cuda,openacc --stats=true --force-overwrite true -o "${PROFILE_OUT}" \
-    "${BIN_OPT}" ${N} ${M} 100
+    "${BIN_CUDA}" ${N} ${M} 100
 
 echo "✅ Benchmark Complete."

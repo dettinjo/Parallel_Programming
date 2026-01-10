@@ -1,3 +1,0 @@
-type,size,iterations,time_seconds,speedup
-baseline,4096,10000,.004705000,1.00
-optimized,4096,10000,.003838608,1.22570473463297111869
