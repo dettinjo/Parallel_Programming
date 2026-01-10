@@ -1,0 +1,64 @@
+=== GPU BENCHMARK STARTED (111336) ===
+Node:      aolin-gpu-1.uab.cat
+GPU Info:
+NVIDIA GeForce RTX 2070, 7.5, 8192 MiB
+NVIDIA GeForce GTX 1080 Ti, 6.1, 11264 MiB
+
+--- Compiling (Flags: -fast -acc=gpu -gpu=cc60,cc70,cc75,cc80 -Minfo=accel) ---
+
+--- Running Benchmark (4096x4096, 10000 iters) ---
+1. Baseline...
+   Time: 0,0000 s
+2. CUDA...
+   Time: 0,0000 s
+   Speedup: 0,00x
+
+--- Profiling (Short Run: 100 iters) ---
+Jacobi relaxation Calculation: 4096 x 4096 mesh, maximum of 100 iterations. Threads per block= 256
+Grid: 2048 blocks × 256 threads
+   50, 0.112275
+  100, 0.079589
+Total Iterations:   100, ERROR: 0.079589, A[32][32]= 0.006335
+
+
+CUDA API Statistics:
+
+ Time(%)  Total Time (ns)  Num Calls     Average     Minimum    Maximum          Name      
+ -------  ---------------  ---------  -------------  -------  -----------  ----------------
+    83,0      316.365.426          3  105.455.142,0  139.098  316.028.909  cudaMalloc      
+    16,0       61.814.837          5   12.362.967,0  164.209   21.981.151  cudaMemcpy      
+     0,0        1.305.672        100       13.056,0    7.367      412.912  cudaLaunchKernel
+     0,0          593.543          3      197.847,0   99.069      319.542  cudaFree        
+     0,0           27.540          2       13.770,0    8.017       19.523  cudaMemset      
+
+
+
+CUDA Kernel Statistics:
+
+ Time(%)  Total Time (ns)  Instances  Average   Minimum  Maximum                            Name                           
+ -------  ---------------  ---------  --------  -------  -------  ---------------------------------------------------------
+   100,0        1.265.959        100  12.659,0   12.320   15.360  dev_laplace_single(float*, float*, float*, int, int, int)
+
+
+
+CUDA Memory Operation Statistics (by time):
+
+ Time(%)  Total Time (ns)  Operations    Average      Minimum     Maximum        Operation     
+ -------  ---------------  ----------  ------------  ----------  ----------  ------------------
+    64,0       38.965.607           2  19.482.803,0  19.452.531  19.513.076  [CUDA memcpy HtoD]
+    35,0       21.370.967           3   7.123.655,0       1.311  21.368.344  [CUDA memcpy DtoH]
+     0,0            3.105           2       1.552,0       1.377       1.728  [CUDA memset]     
+
+
+
+CUDA Memory Operation Statistics (by size in KiB):
+
+    Total     Operations   Average     Minimum     Maximum        Operation     
+ -----------  ----------  ----------  ----------  ----------  ------------------
+  65.536,000           3  21.845,000       0,000  65.536,000  [CUDA memcpy DtoH]
+ 131.072,000           2  65.536,000  65.536,000  65.536,000  [CUDA memcpy HtoD]
+       0,000           2       0,000       0,000       0,000  [CUDA memset]     
+
+✅ Benchmark Complete.
+--- Cleaning up ---
+Moving logs to /home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/results...

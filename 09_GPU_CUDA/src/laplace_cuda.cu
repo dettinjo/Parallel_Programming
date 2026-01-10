@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-// Optimized atomicMax for float
 __device__ float atomicMax(float *addr, float val) {
   unsigned int old = __float_as_uint(*addr), assumed;
   do {
@@ -14,40 +13,27 @@ __device__ float atomicMax(float *addr, float val) {
   return __uint_as_float(old);
 }
 
-// Optimized kernel with better memory access patterns and occupancy
-__global__ void dev_laplace_error_v3(float *A, float *Anew, float *error_dev, 
-                                     int n, int m, int compute_error) {
-  // Use 1D indexing for better memory coalescing
+// Correct single-iteration kernel maintaining Jacobi semantics
+__global__ void dev_laplace_single(float *A, float *Anew, float *error_dev, 
+                                   int n, int m, int compute_error) {
   int tid = blockIdx.x * blockDim.x + threadIdx.x;
-  int stride = gridDim.x * blockDim.x;
-  
-  // Process multiple points per thread to improve arithmetic intensity
   int total_points = (n-2) * (m-2);
   
-  for (int linear_idx = tid; linear_idx < total_points; linear_idx += stride) {
-    // Convert back to 2D coordinates
-    int j = (linear_idx / (m-2)) + 1;  // Row
-    int i = (linear_idx % (m-2)) + 1;  // Column
-    
-    int idx = j * m + i;
-    
-    // 5-point stencil with optimized memory access
-    float center = A[idx];
-    float left   = A[idx - 1];
-    float right  = A[idx + 1];
-    float top    = A[idx - m];
-    float bottom = A[idx + m];
-    
-    // Compute new value
-    float new_val = 0.25f * (left + right + top + bottom);
-    Anew[idx] = new_val;
-    
-    // Only compute error when needed (not every iteration)
-    if (compute_error) {
-      float local_error = fabsf(center - new_val);
-      if (local_error > 0.0f) {
-        atomicMax(error_dev, local_error);
-      }
+  if (tid >= total_points) return;
+  
+  int j = (tid / (m-2)) + 1;
+  int i = (tid % (m-2)) + 1;
+  int idx = j * m + i;
+  
+  // 5-point stencil using current A values
+  float new_val = 0.25f * (A[idx-1] + A[idx+1] + A[idx-m] + A[idx+m]);
+  Anew[idx] = new_val;
+  
+  // Compute error if needed
+  if (compute_error) {
+    float local_error = fabsf(A[idx] - new_val);
+    if (local_error > 0.0f) {
+      atomicMax(error_dev, local_error);
     }
   }
 }
@@ -70,7 +56,7 @@ void laplace_init(float *in, int n, int m) {
 
 int main(int argc, char **argv) {
   int n = 4096, m = 4096;
-  int iter_max = 100, THREADS_BLOCK = 256;  // Larger block size for better occupancy
+  int iter_max = 100, THREADS_BLOCK = 256;
   float *A;
 
   const float tol = 1.0e-8f;
@@ -89,79 +75,63 @@ int main(int argc, char **argv) {
          "maximum of %d iterations. Threads per block= %d\n",
          n, m, iter_max, THREADS_BLOCK);
 
-  // GPU memory allocation
   float *A_dev, *Anew_dev, *error_dev;
   cudaMalloc(&A_dev, n * m * sizeof(float));
   cudaMalloc(&Anew_dev, n * m * sizeof(float));
   cudaMalloc(&error_dev, sizeof(float));
 
-  // Single transfer to GPU
   cudaMemcpy(A_dev, A, n * m * sizeof(float), cudaMemcpyHostToDevice);
   cudaMemcpy(Anew_dev, A, n * m * sizeof(float), cudaMemcpyHostToDevice);
 
-  // Grid configuration: 1D grid for better flexibility
   int total_points = (n-2) * (m-2);
   int num_blocks = (total_points + THREADS_BLOCK - 1) / THREADS_BLOCK;
-  // Limit to reasonable number of blocks
   num_blocks = min(num_blocks, 2048);
   
-  dim3 gridDim(num_blocks, 1, 1);
-  dim3 blockDim(THREADS_BLOCK, 1, 1);
+  printf("Grid: %d blocks × %d threads\n", num_blocks, THREADS_BLOCK);
 
-  printf("Grid: %d blocks, Block: %d threads, Total threads: %d\n", 
-         num_blocks, THREADS_BLOCK, num_blocks * THREADS_BLOCK);
-
-  // Aggressive batching to minimize CPU-GPU sync
-  int check_interval = 50;  // Check convergence every 50 iterations
+  // Batching approach: run many iterations between error checks
+  int check_interval = 50;
   int iter = 0;
-  
-  printf("Using batched convergence checking (every %d iterations)\n", check_interval);
 
   while (iter < iter_max) {
-    // Determine batch size
     int remaining = iter_max - iter;
     int batch_size = (remaining < check_interval) ? remaining : check_interval;
-    int batch_end = iter + batch_size;
     
-    // Run batch of iterations without error checking
-    for (int i = iter; i < batch_end - 1; i++) {
-      dev_laplace_error_v3<<<gridDim, blockDim>>>(A_dev, Anew_dev, error_dev, n, m, 0);
+    // Run batch_size iterations
+    for (int i = 0; i < batch_size; i++) {
+      if (i == batch_size - 1) {
+        // Last iteration: compute error
+        cudaMemset(error_dev, 0, sizeof(float));
+        dev_laplace_single<<<num_blocks, THREADS_BLOCK>>>(A_dev, Anew_dev, error_dev, n, m, 1);
+      } else {
+        // Regular iteration: no error
+        dev_laplace_single<<<num_blocks, THREADS_BLOCK>>>(A_dev, Anew_dev, error_dev, n, m, 0);
+      }
       
-      // Swap arrays
+      // Swap arrays (maintains Jacobi semantics)
       float *temp = A_dev;
       A_dev = Anew_dev;
       Anew_dev = temp;
     }
     
-    // Final iteration of batch WITH error checking
-    cudaMemset(error_dev, 0, sizeof(float));
-    dev_laplace_error_v3<<<gridDim, blockDim>>>(A_dev, Anew_dev, error_dev, n, m, 1);
-    
-    // Only NOW do we transfer error back to CPU
+    // Check convergence
     cudaMemcpy(&error, error_dev, sizeof(float), cudaMemcpyDeviceToHost);
     error = sqrtf(error);
     
-    float *temp = A_dev;
-    A_dev = Anew_dev;
-    Anew_dev = temp;
-    
-    iter = batch_end;
+    iter += batch_size;
     printf("%5d, %0.6f\n", iter, error);
     
-    // Check convergence
     if (error <= tol) {
       printf("Converged at iteration %d\n", iter);
       break;
     }
   }
 
-  // Final result transfer
   cudaMemcpy(A, A_dev, n * m * sizeof(float), cudaMemcpyDeviceToHost);
 
   printf("Total Iterations: %5d, ERROR: %0.6f, ", iter, error);
   printf("A[%d][%d]= %0.6f\n", n / 128, m / 128, A[(n / 128) * m + m / 128]);
 
-  // Cleanup
   cudaFree(A_dev);
   cudaFree(Anew_dev);
   cudaFree(error_dev);
