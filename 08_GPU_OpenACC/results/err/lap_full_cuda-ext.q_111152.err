@@ -1,0 +1,60 @@
+"/home/master/ppm/ppm-43/Parallel Programming/08_GPU_OpenACC/src/laplace_baseline.c", line 76: warning: last line of file ends without a newline
+  }
+   ^
+
+main:
+     49, Generating copy(A[:][:]) [if not already present]
+         Generating create(Anew[:][:]) [if not already present]
+     54, Loop is parallelizable
+     55, Loop is parallelizable
+         Generating Tesla code
+         54, #pragma acc loop gang, vector(128) collapse(2) /* blockIdx.x threadIdx.x collapsed-innermost */
+         55,   /* blockIdx.x threadIdx.x auto-collapsed */
+     59, Loop is parallelizable
+         Generating implicit copy(error) [if not already present]
+     60, Loop is parallelizable
+         Generating Tesla code
+         59, #pragma acc loop gang, vector(128) collapse(2) /* blockIdx.x threadIdx.x collapsed-innermost */
+             Generating implicit reduction(max:error)
+         60,   /* blockIdx.x threadIdx.x auto-collapsed */
+     64, Loop is parallelizable
+     65, Loop is parallelizable
+         Generating Tesla code
+         64, #pragma acc loop gang, vector(128) collapse(2) /* blockIdx.x threadIdx.x collapsed-innermost */
+         65,   /* blockIdx.x threadIdx.x auto-collapsed */
+"/home/master/ppm/ppm-43/Parallel Programming/08_GPU_OpenACC/src/laplace_opt.c", line 147: warning: last line of file ends without a newline
+  }
+   ^
+
+main:
+     71, Generating create(Anew[:total_size]) [if not already present]
+         Generating copy(A[:total_size]) [if not already present]
+     73, Generating present(output[:1],input[:1])
+         Generating Tesla code
+         78, #pragma acc loop gang, vector tile(32,4) /* blockIdx.x threadIdx.x */
+         79,   /* blockIdx.x threadIdx.x tiled */
+     95, Generating present(output[:1],input[:1])
+         Generating Tesla code
+        101, #pragma acc loop gang, vector(128) collapse(2) /* blockIdx.x threadIdx.x */
+             Generating reduction(max:error)
+        102,   /* blockIdx.x threadIdx.x collapsed */
+     95, Generating implicit copy(error) [if not already present]
+    129, Generating present(output[:1],input[:1])
+         Generating Tesla code
+        131, #pragma acc loop gang, vector(128) collapse(2) /* blockIdx.x threadIdx.x */
+        132,   /* blockIdx.x threadIdx.x collapsed */
+Warning: LBR backtrace method is not supported on this platform. DWARF backtrace method will be used.
+Collecting data...
+Processing events...
+Saving temporary "/tmp/nsys-report-4e0e-02f9-1416-aa33.qdstrm" file to disk...
+
+Creating final output files...
+Processing [0%                                                                ]Processing [1%                                                                ]Processing [==========20%                                                     ]Processing [===================34%                                            ]Processing [=============================49%                                  ]Processing [==============================================75%                 ]Processing [===============================================76%                ]Processing [===============================================77%                ]Processing [================================================78%               ]Processing [==================================================81%             ]Processing [===================================================82%            ]Processing [=====================================================85%          ]Processing [===========================================================95%    ]Processing [==============================================================100%]
+Saved report file to "/tmp/nsys-report-4e0e-02f9-1416-aa33.qdrep"
+Exporting 2277 events: [1%                                                    ]Exporting 2277 events: [2%                                                    ]Exporting 2277 events: [3%                                                    ]Exporting 2277 events: [4%                                                    ]Exporting 2277 events: [5%                                                    ]Exporting 2277 events: [=6%                                                   ]Exporting 2277 events: [=7%                                                   ]Exporting 2277 events: [==8%                                                  ]Exporting 2277 events: [==9%                                                  ]Exporting 2277 events: [==10%                                                 ]Exporting 2277 events: [==11%                                                 ]Exporting 2277 events: [===12%                                                ]Exporting 2277 events: [====13%                                               ]Exporting 2277 events: [====14%                                               ]Exporting 2277 events: [=====15%                                              ]Exporting 2277 events: [=====16%                                              ]Exporting 2277 events: [======17%                                             ]Exporting 2277 events: [======18%                                             ]Exporting 2277 events: [=======19%                                            ]Exporting 2277 events: [=======20%                                            ]Exporting 2277 events: [========21%                                           ]Exporting 2277 events: [========22%                                           ]Exporting 2277 events: [=========23%                                          ]Exporting 2277 events: [=========24%                                          ]Exporting 2277 events: [==========25%                                         ]Exporting 2277 events: [===========26%                                        ]Exporting 2277 events: [===========27%                                        ]Exporting 2277 events: [============28%                                       ]Exporting 2277 events: [============29%                                       ]Exporting 2277 events: [=============30%                                      ]Exporting 2277 events: [=============31%                                      ]Exporting 2277 events: [==============32%                                     ]Exporting 2277 events: [==============33%                                     ]Exporting 2277 events: [===============34%                                    ]Exporting 2277 events: [===============35%                                    ]Exporting 2277 events: [================36%                                   ]Exporting 2277 events: [================37%                                   ]Exporting 2277 events: [=================38%                                  ]Exporting 2277 events: [==================39%                                 ]Exporting 2277 events: [==================40%                                 ]Exporting 2277 events: [===================41%                                ]Exporting 2277 events: [===================42%                                ]Exporting 2277 events: [====================43%                               ]Exporting 2277 events: [====================44%                               ]Exporting 2277 events: [=====================45%                              ]Exporting 2277 events: [=====================46%                              ]Exporting 2277 events: [======================47%                             ]Exporting 2277 events: [======================48%                             ]Exporting 2277 events: [=======================49%                            ]Exporting 2277 events: [========================50%                           ]Exporting 2277 events: [========================51%                           ]Exporting 2277 events: [=========================52%                          ]Exporting 2277 events: [=========================53%                          ]Exporting 2277 events: [==========================54%                         ]Exporting 2277 events: [==========================55%                         ]Exporting 2277 events: [===========================56%                        ]Exporting 2277 events: [===========================57%                        ]Exporting 2277 events: [============================58%                       ]Exporting 2277 events: [============================59%                       ]Exporting 2277 events: [=============================60%                      ]Exporting 2277 events: [=============================61%                      ]Exporting 2277 events: [==============================62%                     ]Exporting 2277 events: [===============================63%                    ]Exporting 2277 events: [===============================64%                    ]Exporting 2277 events: [================================65%                   ]Exporting 2277 events: [================================66%                   ]Exporting 2277 events: [=================================67%                  ]Exporting 2277 events: [=================================68%                  ]Exporting 2277 events: [==================================69%                 ]Exporting 2277 events: [==================================70%                 ]Exporting 2277 events: [===================================71%                ]Exporting 2277 events: [===================================72%                ]Exporting 2277 events: [====================================73%               ]Exporting 2277 events: [====================================74%               ]Exporting 2277 events: [=====================================75%              ]Exporting 2277 events: [======================================76%             ]Exporting 2277 events: [======================================77%             ]Exporting 2277 events: [=======================================78%            ]Exporting 2277 events: [=======================================79%            ]Exporting 2277 events: [========================================80%           ]Exporting 2277 events: [========================================81%           ]Exporting 2277 events: [=========================================82%          ]Exporting 2277 events: [=========================================83%          ]Exporting 2277 events: [==========================================84%         ]Exporting 2277 events: [==========================================85%         ]Exporting 2277 events: [===========================================86%        ]Exporting 2277 events: [===========================================87%        ]Exporting 2277 events: [============================================88%       ]Exporting 2277 events: [=============================================89%      ]Exporting 2277 events: [=============================================90%      ]Exporting 2277 events: [==============================================91%     ]Exporting 2277 events: [==============================================92%     ]Exporting 2277 events: [===============================================93%    ]Exporting 2277 events: [===============================================94%    ]Exporting 2277 events: [================================================95%   ]Exporting 2277 events: [================================================96%   ]Exporting 2277 events: [=================================================97%  ]Exporting 2277 events: [=================================================98%  ]Exporting 2277 events: [==================================================99% ]Exporting 2277 events: [==================================================100%]
+
+Exported successfully to
+/tmp/nsys-report-4e0e-02f9-1416-aa33.sqlite
+Report file moved to "/home/master/ppm/ppm-43/Parallel Programming/08_GPU_OpenACC/results/profile_full_cuda-ext.q_111152.qdrep"
+Report file moved to "/home/master/ppm/ppm-43/Parallel Programming/08_GPU_OpenACC/results/profile_full_cuda-ext.q_111152.sqlite"
+

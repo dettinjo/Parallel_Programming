@@ -1,0 +1,114 @@
+#!/bin/bash
+
+#SBATCH --job-name=lap_full
+#SBATCH --output=lap_full_%j.log
+#SBATCH --error=lap_full_%j.err
+#SBATCH --partition=cuda-ext.q
+#SBATCH --gres=gpu:1
+#SBATCH --exclusive
+#SBATCH --time=00:20:00
+
+# --- 1. Path Setup ---
+if [[ "$SLURM_SUBMIT_DIR" == *"scripts" ]]; then
+    PROJECT_ROOT="$(dirname "${SLURM_SUBMIT_DIR}")"
+else
+    PROJECT_ROOT="${SLURM_SUBMIT_DIR}"
+fi
+
+SRC_DIR="${PROJECT_ROOT}/src"
+RESULTS_DIR="${PROJECT_ROOT}/results"
+LOG_DIR="${RESULTS_DIR}/log"
+ERR_DIR="${RESULTS_DIR}/err"
+CSV_DIR="${RESULTS_DIR}/csv"
+
+mkdir -p "${LOG_DIR}" "${ERR_DIR}" "${CSV_DIR}"
+
+# --- 2. Configuration & Naming ---
+JOB_ID=${SLURM_JOB_ID}
+JOB_NAME=${SLURM_JOB_NAME}
+PARTITION=${SLURM_JOB_PARTITION}
+
+CSV_FILE="${CSV_DIR}/timings_full_${PARTITION}_${JOB_ID}.csv"
+PROFILE_OUT="${RESULTS_DIR}/profile_full_${PARTITION}_${JOB_ID}"
+BIN_BASE="${SRC_DIR}/laplace_base_${JOB_ID}"
+BIN_OPT="${SRC_DIR}/laplace_opt_${JOB_ID}"
+
+# --- 3. Automatic Cleanup Function ---
+# This runs automatically when the script exits (success or failure)
+cleanup() {
+    echo "--- Cleaning up ---"
+    rm -f "${BIN_BASE}" "${BIN_OPT}"
+    
+    # Allow logs to close
+    sleep 2 
+    
+    # Move logs to results folder
+    echo "Moving logs to ${RESULTS_DIR}..."
+    mv "${SLURM_SUBMIT_DIR}/${JOB_NAME}_${JOB_ID}.log" "${LOG_DIR}/${JOB_NAME}_${PARTITION}_${JOB_ID}.log" 2>/dev/null
+    mv "${SLURM_SUBMIT_DIR}/${JOB_NAME}_${JOB_ID}.err" "${ERR_DIR}/${JOB_NAME}_${PARTITION}_${JOB_ID}.err" 2>/dev/null
+}
+trap cleanup EXIT
+
+# --- 4. System Info ---
+echo "=== GPU BENCHMARK STARTED (${JOB_ID}) ==="
+echo "Node:      $(hostname)"
+echo "GPU Info:"
+nvidia-smi --query-gpu=name,compute_cap,memory.total --format=csv,noheader
+
+# --- 5. Compilation ---
+module purge
+module add nvhpc/21.2
+
+# FLAGS EXPLANATION:
+# cc60 = Pascal (GTX 1080 Ti)
+# cc70 = Volta (V100 - just in case)
+# cc75 = Turing (RTX 2070)
+# cc80 = Ampere (A100 / RTX 3080 compatibility mode)
+FLAGS="-fast -acc=gpu -gpu=cc60,cc70,cc75,cc80 -Minfo=accel"
+
+echo -e "\n--- Compiling (Flags: ${FLAGS}) ---"
+
+# Compile Baseline
+nvc ${FLAGS} "${SRC_DIR}/laplace_baseline.c" -o "${BIN_BASE}"
+if [ $? -ne 0 ]; then echo "❌ Baseline Compile Failed"; exit 1; fi
+
+# Compile Optimized
+nvc ${FLAGS} "${SRC_DIR}/laplace_opt.c" -o "${BIN_OPT}"
+if [ $? -ne 0 ]; then echo "❌ Optimized Compile Failed"; exit 1; fi
+
+# --- 6. Execution ---
+N=4096
+M=4096
+ITER=10000
+
+echo -e "\n--- Running Benchmark (${N}x${M}, ${ITER} iters) ---"
+echo "type,size,iterations,time_seconds,speedup" > "${CSV_FILE}"
+
+# Run Baseline
+echo "1. Baseline..."
+START=$(date +%s.%N)
+"${BIN_BASE}" ${ITER} > /dev/null
+END=$(date +%s.%N)
+TIME_BASE=$(echo "$END - $START" | bc)
+printf "   Time: %.4f s\n" "${TIME_BASE}"
+echo "baseline,${N},${ITER},${TIME_BASE},1.00" >> "${CSV_FILE}"
+
+# Run Optimized
+echo "2. Optimized..."
+START=$(date +%s.%N)
+"${BIN_OPT}" ${N} ${M} ${ITER} > /dev/null
+END=$(date +%s.%N)
+TIME_OPT=$(echo "$END - $START" | bc)
+printf "   Time: %.4f s\n" "${TIME_OPT}"
+
+# Calculate Speedup
+SPEEDUP=$(echo "$TIME_BASE / $TIME_OPT" | bc -l)
+printf "   Speedup: %.2fx\n" "${SPEEDUP}"
+echo "optimized,${N},${ITER},${TIME_OPT},${SPEEDUP}" >> "${CSV_FILE}"
+
+# --- 7. Profiling ---
+echo -e "\n--- Profiling (Short Run: 100 iters) ---"
+nsys profile --trace=cuda,openacc --stats=true --force-overwrite true -o "${PROFILE_OUT}" \
+    "${BIN_OPT}" ${N} ${M} 100
+
+echo "✅ Benchmark Complete."

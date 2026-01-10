@@ -1,0 +1,69 @@
+#!/bin/bash
+
+#SBATCH --job-name=lap_test
+#SBATCH --output=lap_test_%j.log
+#SBATCH --error=lap_test_%j.err
+#SBATCH --partition=cuda-ext.q
+#SBATCH --gres=gpu:1
+#SBATCH --time=00:05:00
+
+# --- 1. Path Setup (Robust for Spaces) ---
+if [[ "$SLURM_SUBMIT_DIR" == *"scripts" ]]; then
+    PROJECT_ROOT="$(dirname "${SLURM_SUBMIT_DIR}")"
+else
+    PROJECT_ROOT="${SLURM_SUBMIT_DIR}"
+fi
+
+# Quote all path variables to handle "Parallel Programming" folder name
+SRC_DIR="${PROJECT_ROOT}/src"
+RESULTS_DIR="${PROJECT_ROOT}/results"
+LOG_DIR="${RESULTS_DIR}/log"
+ERR_DIR="${RESULTS_DIR}/err"
+CSV_DIR="${RESULTS_DIR}/csv"
+PROF_DIR="${RESULTS_DIR}/profiling" # NEW
+
+# Ensure all result folders exist
+mkdir -p "${LOG_DIR}" "${ERR_DIR}" "${CSV_DIR}" "${PROF_DIR}"
+
+# --- 2. Configuration ---
+JOB_ID=${SLURM_JOB_ID}
+JOB_NAME=${SLURM_JOB_NAME}
+PARTITION=${SLURM_JOB_PARTITION}
+
+# Output Files
+CSV_FILE="${CSV_DIR}/timings_test_${PARTITION}_${JOB_ID}.csv"
+BIN_TEST="${SRC_DIR}/laplace_test_${JOB_ID}"
+
+echo "=== GPU TEST START (${JOB_ID}) ==="
+echo "Node:      $(hostname)"
+echo "Partition: ${PARTITION}"
+module purge
+module add nvhpc/21.2
+
+# --- 3. Compile (Strict GPU) ---
+echo "Compiling..."
+# Added quotes around "${SRC_DIR}/..." and "${BIN_TEST}"
+nvc -fast -acc=gpu -gpu=cc80 "${SRC_DIR}/laplace_opt.c" -o "${BIN_TEST}"
+if [ $? -ne 0 ]; then echo "❌ Compile Failed"; exit 1; fi
+
+# --- 4. Run (Small Size) ---
+echo "Running 1024x1024 (100 iters)..."
+echo "type,size,iterations,time_seconds,speedup" > "${CSV_FILE}"
+
+START=$(date +%s.%N)
+"${BIN_TEST}" 1024 1024 100 > /dev/null
+END=$(date +%s.%N)
+TIME=$(echo "$END - $START" | bc)
+
+echo "   Time: ${TIME}s"
+echo "optimized,1024,100,${TIME},TEST" >> "${CSV_FILE}"
+
+# --- 5. Cleanup ---
+rm -f "${BIN_TEST}"
+
+sleep 2
+# Robust Move with Quotes to handle spaces in path
+mv "${SLURM_SUBMIT_DIR}/${JOB_NAME}_${JOB_ID}.log" "${LOG_DIR}/${JOB_NAME}_${PARTITION}_${JOB_ID}.log" 2>/dev/null
+mv "${SLURM_SUBMIT_DIR}/${JOB_NAME}_${JOB_ID}.err" "${ERR_DIR}/${JOB_NAME}_${PARTITION}_${JOB_ID}.err" 2>/dev/null
+
+echo "✅ Test Complete"

@@ -1,0 +1,60 @@
+"/home/master/ppm/ppm-43/Parallel Programming/08_GPU_OpenACC/src/laplace_baseline.c", line 76: warning: last line of file ends without a newline
+  }
+   ^
+
+main:
+     49, Generating copy(A[:][:]) [if not already present]
+         Generating create(Anew[:][:]) [if not already present]
+     54, Loop is parallelizable
+     55, Loop is parallelizable
+         Generating Tesla code
+         54, #pragma acc loop gang, vector(128) collapse(2) /* blockIdx.x threadIdx.x collapsed-innermost */
+         55,   /* blockIdx.x threadIdx.x auto-collapsed */
+     59, Loop is parallelizable
+         Generating implicit copy(error) [if not already present]
+     60, Loop is parallelizable
+         Generating Tesla code
+         59, #pragma acc loop gang, vector(128) collapse(2) /* blockIdx.x threadIdx.x collapsed-innermost */
+             Generating implicit reduction(max:error)
+         60,   /* blockIdx.x threadIdx.x auto-collapsed */
+     64, Loop is parallelizable
+     65, Loop is parallelizable
+         Generating Tesla code
+         64, #pragma acc loop gang, vector(128) collapse(2) /* blockIdx.x threadIdx.x collapsed-innermost */
+         65,   /* blockIdx.x threadIdx.x auto-collapsed */
+"/home/master/ppm/ppm-43/Parallel Programming/08_GPU_OpenACC/src/laplace_opt.c", line 132: warning: last line of file ends without a newline
+  }
+   ^
+
+main:
+     63, Generating create(Anew[:total_size]) [if not already present]
+         Generating copy(A[:total_size]) [if not already present]
+     66, Generating present(output[:1],input[:1])
+         Generating Tesla code
+         72, #pragma acc loop gang, vector(128) collapse(2) /* blockIdx.x threadIdx.x */
+         73,   /* blockIdx.x threadIdx.x collapsed */
+     81, Generating present(output[:1],input[:1])
+         Generating Tesla code
+         87, #pragma acc loop gang, vector(128) collapse(2) /* blockIdx.x threadIdx.x */
+             Generating reduction(max:error)
+         88,   /* blockIdx.x threadIdx.x collapsed */
+     81, Generating implicit copy(error) [if not already present]
+    112, Generating present(output[:1],input[:1])
+         Generating Tesla code
+        116, #pragma acc loop gang, vector(128) collapse(2) /* blockIdx.x threadIdx.x */
+        117,   /* blockIdx.x threadIdx.x collapsed */
+Warning: LBR backtrace method is not supported on this platform. DWARF backtrace method will be used.
+Collecting data...
+Processing events...
+Saving temporary "/tmp/nsys-report-74ef-3f19-3805-a18d.qdstrm" file to disk...
+
+Creating final output files...
+Processing [0%                                                                ]Processing [1%                                                                ]Processing [0%                                                                ]Processing [==7%                                                              ]Processing [======14%                                                         ]Processing [=============25%                                                  ]Processing [==============================51%                                 ]Processing [==========================================69%                     ]Processing [===============================================76%                ]Processing [===============================================77%                ]Processing [================================================78%               ]Processing [=================================================79%              ]Processing [==================================================81%             ]Processing [======================================================87%         ]Processing [==============================================================100%]
+Saved report file to "/tmp/nsys-report-74ef-3f19-3805-a18d.qdrep"
+Exporting 5012 events: [1%                                                    ]Exporting 5012 events: [2%                                                    ]Exporting 5012 events: [3%                                                    ]Exporting 5012 events: [4%                                                    ]Exporting 5012 events: [5%                                                    ]Exporting 5012 events: [=6%                                                   ]Exporting 5012 events: [=7%                                                   ]Exporting 5012 events: [==8%                                                  ]Exporting 5012 events: [==9%                                                  ]Exporting 5012 events: [==10%                                                 ]Exporting 5012 events: [==11%                                                 ]Exporting 5012 events: [===12%                                                ]Exporting 5012 events: [====13%                                               ]Exporting 5012 events: [====14%                                               ]Exporting 5012 events: [=====15%                                              ]Exporting 5012 events: [=====16%                                              ]Exporting 5012 events: [======17%                                             ]Exporting 5012 events: [======18%                                             ]Exporting 5012 events: [=======19%                                            ]Exporting 5012 events: [=======20%                                            ]Exporting 5012 events: [========21%                                           ]Exporting 5012 events: [========22%                                           ]Exporting 5012 events: [=========23%                                          ]Exporting 5012 events: [=========24%                                          ]Exporting 5012 events: [==========25%                                         ]Exporting 5012 events: [===========26%                                        ]Exporting 5012 events: [===========27%                                        ]Exporting 5012 events: [============28%                                       ]Exporting 5012 events: [============29%                                       ]Exporting 5012 events: [=============30%                                      ]Exporting 5012 events: [=============31%                                      ]Exporting 5012 events: [==============32%                                     ]Exporting 5012 events: [==============33%                                     ]Exporting 5012 events: [===============34%                                    ]Exporting 5012 events: [===============35%                                    ]Exporting 5012 events: [================36%                                   ]Exporting 5012 events: [================37%                                   ]Exporting 5012 events: [=================38%                                  ]Exporting 5012 events: [==================39%                                 ]Exporting 5012 events: [==================40%                                 ]Exporting 5012 events: [===================41%                                ]Exporting 5012 events: [===================42%                                ]Exporting 5012 events: [====================43%                               ]Exporting 5012 events: [====================44%                               ]Exporting 5012 events: [=====================45%                              ]Exporting 5012 events: [=====================46%                              ]Exporting 5012 events: [======================47%                             ]Exporting 5012 events: [======================48%                             ]Exporting 5012 events: [=======================49%                            ]Exporting 5012 events: [========================50%                           ]Exporting 5012 events: [========================51%                           ]Exporting 5012 events: [=========================52%                          ]Exporting 5012 events: [=========================53%                          ]Exporting 5012 events: [==========================54%                         ]Exporting 5012 events: [==========================55%                         ]Exporting 5012 events: [===========================56%                        ]Exporting 5012 events: [===========================57%                        ]Exporting 5012 events: [============================58%                       ]Exporting 5012 events: [============================59%                       ]Exporting 5012 events: [=============================60%                      ]Exporting 5012 events: [=============================61%                      ]Exporting 5012 events: [==============================62%                     ]Exporting 5012 events: [===============================63%                    ]Exporting 5012 events: [===============================64%                    ]Exporting 5012 events: [================================65%                   ]Exporting 5012 events: [================================66%                   ]Exporting 5012 events: [=================================67%                  ]Exporting 5012 events: [=================================68%                  ]Exporting 5012 events: [==================================69%                 ]Exporting 5012 events: [==================================70%                 ]Exporting 5012 events: [===================================71%                ]Exporting 5012 events: [===================================72%                ]Exporting 5012 events: [====================================73%               ]Exporting 5012 events: [====================================74%               ]Exporting 5012 events: [=====================================75%              ]Exporting 5012 events: [======================================76%             ]Exporting 5012 events: [======================================77%             ]Exporting 5012 events: [=======================================78%            ]Exporting 5012 events: [=======================================79%            ]Exporting 5012 events: [========================================80%           ]Exporting 5012 events: [========================================81%           ]Exporting 5012 events: [=========================================82%          ]Exporting 5012 events: [=========================================83%          ]Exporting 5012 events: [==========================================84%         ]Exporting 5012 events: [==========================================85%         ]Exporting 5012 events: [===========================================86%        ]Exporting 5012 events: [===========================================87%        ]Exporting 5012 events: [============================================88%       ]Exporting 5012 events: [=============================================89%      ]Exporting 5012 events: [=============================================90%      ]Exporting 5012 events: [==============================================91%     ]Exporting 5012 events: [==============================================92%     ]Exporting 5012 events: [===============================================93%    ]Exporting 5012 events: [===============================================94%    ]Exporting 5012 events: [================================================95%   ]Exporting 5012 events: [================================================96%   ]Exporting 5012 events: [=================================================97%  ]Exporting 5012 events: [=================================================98%  ]Exporting 5012 events: [==================================================99% ]Exporting 5012 events: [==================================================100%]
+
+Exported successfully to
+/tmp/nsys-report-74ef-3f19-3805-a18d.sqlite
+Report file moved to "/home/master/ppm/ppm-43/Parallel Programming/08_GPU_OpenACC/results/profile_full_cuda-ext.q_111151.qdrep"
+Report file moved to "/home/master/ppm/ppm-43/Parallel Programming/08_GPU_OpenACC/results/profile_full_cuda-ext.q_111151.sqlite"
+

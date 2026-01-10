@@ -1,0 +1,52 @@
+#!/bin/bash
+#SBATCH --job-name=plot_res
+#SBATCH --partition=cuda-ext.q
+#SBATCH --time=00:05:00
+
+# --- FIX: Direct Log/Error files to specific subfolders ---
+#SBATCH --output=../results/log/plot_res_%j.log
+#SBATCH --error=../results/err/plot_res_%j.err
+
+# --- 1. Directory Setup ---
+if [[ "$SLURM_SUBMIT_DIR" != "" ]]; then
+    cd "${SLURM_SUBMIT_DIR}"
+fi
+
+# Create directories
+mkdir -p "../results/plots"
+mkdir -p "../results/csv"
+mkdir -p "../results/log"
+mkdir -p "../results/err"
+
+# --- 2. Generate Data CSV ---
+CSV_FILE="../results/csv/final_comparison.csv"
+
+echo "Generating CSV data at: ${CSV_FILE}"
+echo "Version,Time_Seconds" > "${CSV_FILE}"
+
+# FIXED: Replaced ',' with 'x' in labels to avoid CSV parsing errors
+echo "Baseline (Static),12.26" >> "${CSV_FILE}"
+echo "V1: Basic Dynamic,9.06" >> "${CSV_FILE}"
+echo "V2: Tile(32x4),4.13" >> "${CSV_FILE}"
+echo "V3: Tile(4x32) [Fail],7.61" >> "${CSV_FILE}"
+echo "V4: Final (Collapse),4.14" >> "${CSV_FILE}"
+
+# --- 3. Run Plotting Script ---
+echo "Running Python plotting script..."
+
+module load python/3.x 2>/dev/null || module load python 2>/dev/null || true
+
+PYTHON_CMD="python"
+if command -v python3 &> /dev/null; then
+    PYTHON_CMD="python3"
+fi
+
+$PYTHON_CMD plot_results.py "${CSV_FILE}"
+
+# --- 4. Verify Output ---
+PLOT_FILE="../results/plots/performance_comparison.png"
+if [ -f "$PLOT_FILE" ]; then
+    echo "✅ Success! Plot saved to: $PLOT_FILE"
+else
+    echo "❌ Error: Plot was not created."
+fi

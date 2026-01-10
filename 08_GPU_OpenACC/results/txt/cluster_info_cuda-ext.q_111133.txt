@@ -1,0 +1,49 @@
+=== CLUSTER PROBE REPORT (111133) ===
+Partition: cuda-ext.q
+Node: aolin-gpu-3.uab.cat
+Date: Fri Jan  9 13:46:38 CET 2026
+
+[PARTITIONS]
+PARTITION            AVAIL      TIMELIMIT       GROUPS          CPUS(A/I/O/T) NODELIST
+research.q           up         infinite        caos,pfc,master 12/56/0/68 aolin-gpu-[1-4]
+aolin.q*             down       30:00           all             0/0/144/144 aolin[11-22]
+cuda-int.q           up         30:00           all             0/32/0/32 aolin-gpu-[2,4]
+cuda-ext.q           up         30:00           all             12/24/0/36 aolin-gpu-[1,3]
+test.q               up         10:00           all             0/12/0/12 aolin-login-bak
+interactive.q        up         10:00           all             12/0/0/12 aolin-gpu-3
+xeon.q               up         30:00           all             0/8/0/8 aolin-cpu-1
+
+[CPU]
+Architecture:        x86_64
+CPU op-mode(s):      32-bit, 64-bit
+Byte Order:          Little Endian
+CPU(s):              12
+On-line CPU(s) list: 0-11
+Thread(s) per core:  2
+Core(s) per socket:  6
+Socket(s):           1
+NUMA node(s):        1
+Vendor ID:           GenuineIntel
+CPU family:          6
+Model:               44
+Model name:          Intel(R) Xeon(R) CPU           W3670  @ 3.20GHz
+Stepping:            2
+CPU MHz:             3192.000
+CPU max MHz:         3192.0000
+CPU min MHz:         1596.0000
+BogoMIPS:            6399.81
+Virtualization:      VT-x
+L1d cache:           32K
+L1i cache:           32K
+L2 cache:            256K
+L3 cache:            12288K
+NUMA node0 CPU(s):   0-11
+Flags:               fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 cx16 xtpr pdcm pcid dca sse4_1 sse4_2 popcnt aes lahf_lm epb pti ssbd ibrs ibpb stibp tpr_shadow vnmi flexpriority ept vpid dtherm arat flush_l1d
+
+[GPU]
+name, compute_cap, memory.total [MiB], driver_version
+NVIDIA GeForce RTX 3080, 8.6, 10240 MiB, 535.54.03
+
+[MODULES]
+-------------------- /soft/modules-4.6.1/modulefiles/tools ---------------------
+nvhpc-byo-compiler/21.2  nvhpc-nompi/21.2  nvhpc/21.2  
