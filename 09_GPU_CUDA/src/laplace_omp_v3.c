@@ -14,8 +14,10 @@ int main(int argc, char** argv) {
 
   // Initialize with defaults
   int n = 100, m = 100;
+  int iter_max = 100;
   if (argc > 1) n = atoi(argv[1]);
   if (argc > 2) m = atoi(argv[2]);
+  if (argc > 3) iter_max = atoi(argv[3]);
 
   // OPTIMIZATION 1: Flattened arrays for better memory locality
   // Single contiguous allocation instead of array of pointers
@@ -46,7 +48,7 @@ int main(int argc, char** argv) {
 
   const float tol = 1.0e-3f;
   float error = 1.0f;
-  int iter_max = 100;
+  
   
   double start_time = omp_get_wtime();
   

@@ -95,7 +95,7 @@ int main(int argc, char** argv)
                 for (int j = 1; j < n - 1; j++) {
                     for (int i = 1; i < m - 1; i++) {
                         float diff = fabsf(output[j*m + i] - input[j*m + i]);
-                        error = fmaxf(error, sqrtf(diff));
+                        error = fmaxf(error, diff);
                     }
                 }
                 // We must wait here to read the error value on the host

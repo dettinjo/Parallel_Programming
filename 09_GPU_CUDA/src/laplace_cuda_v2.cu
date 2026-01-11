@@ -85,9 +85,9 @@ int main(int argc, char **argv) {
 
   int total_points = (n-2) * (m-2);
   int num_blocks = (total_points + THREADS_BLOCK - 1) / THREADS_BLOCK;
-  num_blocks = min(num_blocks, 2048);
+  num_blocks = fminf(num_blocks, 2048);
   
-  printf("Grid: %d blocks × %d threads\n", num_blocks, THREADS_BLOCK);
+  printf("Grid: %d blocks x %d threads\n", num_blocks, THREADS_BLOCK);
 
   // Batching approach: run many iterations between error checks
   int check_interval = 50;
