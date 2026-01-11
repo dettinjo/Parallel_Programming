@@ -26,10 +26,10 @@ int main(int argc, char** argv) {
     /* Original variables */
     int i, j, iter = 0;
     int n, m;
+    int iter_max;
     float **A, **Anew;
     const float tol = 1.0e-3f;
     float error = 1.0f;
-    int iter_max = 100;
     double start_time, end_time;
     int rank, size;
     
@@ -50,6 +50,8 @@ int main(int argc, char** argv) {
     else n = 100;
     if (argc > 2) m = atoi(argv[2]);
     else m = 100;
+    if (argc > 3) iter_max = atoi(argv[3]);
+    else iter_max = 1000;
 
     /* Calculate how many rows each process handles */
     rows_per_proc = (n - 2) / size;  /* Interior rows only */

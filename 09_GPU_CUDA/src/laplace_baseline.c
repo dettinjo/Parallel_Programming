@@ -3,17 +3,25 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define n 4096
-#define m 4096
 
-float A[n][m];
-float Anew[n][m];
-float y[n];
 
 int main(int argc, char** argv)
 {
     int i, j;
-    int iter_max = 100;
+    int n, m;
+    int iter_max;
+    
+    float A[n][m];
+    float Anew[n][m];
+    float y[n];
+
+    /* Get runtime arguments */
+    if (argc > 1) n = atoi(argv[1]);
+    else n = 100;
+    if (argc > 2) m = atoi(argv[2]);
+    else m = 100;
+    if (argc > 3) iter_max = atoi(argv[3]);
+    else iter_max = 1000;
     
     const float pi  = 2.0f * asinf(1.0f);
     const float tol = 1.0e-8f;

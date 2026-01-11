@@ -1,0 +1,74 @@
+=== SIMPLE BENCHMARK (using working compilation from before) ===
+Node: aolin-gpu-1.uab.cat
+Date: dom ene 11 06:45:53 CET 2026
+Source dir: /home/master/ppm/ppm-22/Escritorio/Parallel_Programming/09_GPU_CUDA/src
+Files available:
+total 36
+drwxr-xr-x 2 ppm-22 ppm  185 ene 11 06:27 .
+drwxr-xr-x 5 ppm-22 ppm   63 ene 10 02:08 ..
+-rw-r--r-- 1 ppm-22 ppm 1746 ene 10 02:08 laplace_baseline.c
+-rw-r--r-- 1 ppm-22 ppm 5226 ene 11 01:17 laplace_cuda_v1.cu
+-rw-r--r-- 1 ppm-22 ppm 4093 ene 10 11:06 laplace_cuda_v2.cu
+-rw-r--r-- 1 ppm-22 ppm 5987 ene 11 05:54 laplace_mpi_v1.c
+-rw-r--r-- 1 ppm-22 ppm 3782 ene 11 04:46 laplace_omp_v3.c
+-rw-r--r-- 1 ppm-22 ppm 4958 ene 11 04:45 laplace_openacc.c
+Loaded modules:
+=== COMPILATION (using exact working commands) ===
+1. Compiling OpenACC Baseline...
+   ✓ Success
+2. Compiling CUDA v2...
+   ✓ Success
+3. Compiling OpenACC optimized...
+   ✓ Success
+Skipping MPI and OpenMP for now...
+=== SIMPLE TEST RUN ===
+Testing 2048x2048 matrix with 1000 iterations:
+OpenACC Baseline: 2.875580554s (program reported: Jacobi relaxation Calculation: 4096 x 4096 mesh, maximum of 2048 iterations
+  204, 0.055804
+  408, 0.039531
+  612, 0.032285
+  816, 0.027836
+ 1020, 0.024656
+ 1224, 0.022180
+ 1428, 0.020170
+ 1632, 0.018497
+ 1836, 0.017078
+ 2040, 0.015860
+Total Iterations:  2048, ERROR: 0.015815, A[32][32]= 0.008022s)
+CUDA v2: .333779290s (program reported: Jacobi relaxation Calculation: 2048 x 2048 mesh, maximum of 1000 iterations. Threads per block= 256
+Grid: 2048 blocks × 256 threads
+   50, 0.112291
+  100, 0.079694
+  150, 0.065137
+  200, 0.056205
+  250, 0.049771
+  300, 0.044853
+  350, 0.040795
+  400, 0.037457
+  450, 0.034582
+  500, 0.032153
+  550, 0.030018
+  600, 0.028155
+  650, 0.026510
+  700, 0.025036
+  750, 0.023732
+  800, 0.022540
+  850, 0.021482
+  900, 0.020503
+  950, 0.019623
+ 1000, 0.018806
+Total Iterations:  1000, ERROR: 0.018806, A[16][16]= 0.011906s)
+OpenACC optimized: .500658509s (program reported: Jacobi relaxation: 2048 x 2048 mesh, max 1000 iterations
+    0, 1.000000
+  100, 0.414543
+  200, 0.414332
+  300, 0.414278
+  400, 0.414256
+  500, 0.414244
+  600, 0.414237
+  700, 0.414232
+  800, 0.414229
+  900, 0.414226
+Total Iterations:  1000, ERROR: 0.414203, A[16][16]= 0.006085s)
+=== CLEANUP ===
+Done.
